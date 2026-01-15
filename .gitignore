@@ -63,6 +63,7 @@ provider-mock.exe
 
 # Build artifacts
 build/
+bin/
 dist/
 *.tar.gz
 *.zip
