@@ -1,0 +1,381 @@
+{{define "dashboard.html"}}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="/static/css/output.css" rel="stylesheet">
+    <script src="/static/js/htmx.min.js"></script>
+    <script defer src="/static/js/alpine.min.js"></script>
+</head>
+<body class="h-full bg-slate-950 text-slate-200 font-sans antialiased">
+<div class="flex h-full">
+    {{template "sidebar" .}}
+    <main class="flex-1 overflow-y-auto">
+<div class="p-6 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">{{t .Lang "dashboard.title"}}</h1>
+            <p class="text-slate-400 mt-1">{{t .Lang "dashboard.subtitle"}}</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="text-sm text-slate-500">Last updated: <span class="font-mono text-slate-400" x-data x-text="new Date().toLocaleTimeString()"></span></span>
+            <button hx-get="/api/dashboard/refresh" hx-target="#stats-grid" hx-swap="innerHTML"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 transition-colors flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>Refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div id="stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Machines -->
+        <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">{{t .Lang "dashboard.total_machines"}}</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.Stats.TotalMachines}}</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="text-emerald-500">+{{.Stats.NewToday}}</span>
+                <span class="text-slate-500 ml-1">today</span>
+            </div>
+        </div>
+
+        <!-- Online Machines -->
+        <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">{{t .Lang "dashboard.online_machines"}}</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.Stats.OnlineMachines}}</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <div class="relative">
+                        <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                        <div class="absolute inset-0 w-3 h-3 bg-emerald-500 rounded-full animate-ping"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="w-full bg-slate-800 rounded-full h-2">
+                    <div class="bg-emerald-500 h-2 rounded-full" style="width: {{.Stats.OnlinePercent}}%"></div>
+                </div>
+                <p class="text-slate-500 text-sm mt-1">{{.Stats.OnlinePercent}}% availability</p>
+            </div>
+        </div>
+
+        <!-- Active Jobs -->
+        <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">{{t .Lang "dashboard.active_jobs"}}</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.Stats.ActiveJobs}}</p>
+                </div>
+                <div class="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center space-x-4 text-sm">
+                <span class="text-emerald-500">{{.Stats.CompletedToday}} completed</span>
+                <span class="text-rose-500">{{.Stats.FailedToday}} failed</span>
+            </div>
+        </div>
+
+        <!-- Providers -->
+        <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">{{t .Lang "dashboard.providers"}}</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.Stats.Providers}}</p>
+                </div>
+                <div class="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                    {{.Stats.CertifiedProviders}} certified
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Machines -->
+        <div class="lg:col-span-2 bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-white">{{t .Lang "dashboard.recent_machines"}}</h2>
+                <a href="/machines" class="text-sm text-emerald-500 hover:text-emerald-400">{{t .Lang "common.view"}}</a>
+            </div>
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-slate-500 text-sm">
+                                <th class="pb-3 font-medium">{{t .Lang "machines.hostname"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machines.ip_address"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machines.status"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machines.last_seen"}}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {{range .RecentMachines}}
+                            <tr class="hover:bg-slate-800/50 transition-colors">
+                                <td class="py-3">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="font-medium text-white">{{.Hostname}}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 font-mono text-sm text-slate-400">{{.IPAddress}}</td>
+                                <td class="py-3">
+                                    {{if eq .Status "active"}}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span>
+                                        {{t $.Lang "status.active"}}
+                                    </span>
+                                    {{else if eq .Status "installing"}}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-500">
+                                        <span class="w-1.5 h-1.5 bg-violet-500 rounded-full mr-1.5 animate-pulse"></span>
+                                        {{t $.Lang "status.installing"}}
+                                    </span>
+                                    {{else if eq .Status "error"}}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-500">
+                                        <span class="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5"></span>
+                                        {{t $.Lang "status.error"}}
+                                    </span>
+                                    {{else}}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-400">
+                                        <span class="w-1.5 h-1.5 bg-slate-500 rounded-full mr-1.5"></span>
+                                        {{.Status}}
+                                    </span>
+                                    {{end}}
+                                </td>
+                                <td class="py-3 text-sm text-slate-500">{{.UpdatedAt.Format "2006-01-02 15:04"}}</td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="4" class="py-8 text-center text-slate-500">
+                                    <svg class="w-12 h-12 mx-auto text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                                    </svg>
+                                    {{t .Lang "machines.no_machines"}}
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Jobs Panel -->
+        <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-white">{{t .Lang "dashboard.active_jobs_list"}}</h2>
+                <a href="/jobs" class="text-sm text-emerald-500 hover:text-emerald-400">{{t .Lang "common.view"}}</a>
+            </div>
+            <div class="p-4 space-y-3">
+                {{range .ActiveJobs}}
+                <div class="bg-slate-800/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-white">{{.Type}}</span>
+                        <span class="text-xs font-mono text-slate-500">{{.ID}}</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-slate-400">{{.MachineID}}</span>
+                        {{if eq .Status "running"}}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-500/10 text-violet-500">
+                            {{t $.Lang "jobs.running"}}
+                        </span>
+                        {{else if eq .Status "pending"}}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-500">
+                            {{t $.Lang "jobs.pending"}}
+                        </span>
+                        {{end}}
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-1.5">
+                        <div class="bg-violet-500 h-1.5 rounded-full transition-all duration-500" style="width: {{.Progress}}%"></div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">{{.StepCurrent}}</p>
+                </div>
+                {{else}}
+                <div class="text-center py-8 text-slate-500">
+                    <svg class="w-12 h-12 mx-auto text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{t .Lang "jobs.no_jobs"}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8">
+        <h2 class="text-lg font-semibold text-white mb-4">{{t .Lang "dashboard.quick_actions"}}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button onclick="document.getElementById('discover-modal').classList.remove('hidden')" class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-4 hover:border-emerald-500/50 transition-colors group text-left w-full">
+                <div class="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-emerald-500/20 transition-colors">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-white font-medium">{{t .Lang "machines.discover"}}</h3>
+                <p class="text-sm text-slate-500 mt-1">{{t .Lang "machines.discover_hint"}}</p>
+            </button>
+
+            <a href="/os-designer" class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-4 hover:border-emerald-500/50 transition-colors group">
+                <div class="w-10 h-10 bg-violet-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-violet-500/20 transition-colors">
+                    <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-white font-medium">{{t .Lang "dashboard.os_profiles"}}</h3>
+                <p class="text-sm text-slate-500 mt-1">{{t .Lang "os_profiles.subtitle"}}</p>
+            </a>
+
+            <a href="/store" class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-4 hover:border-emerald-500/50 transition-colors group">
+                <div class="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-amber-500/20 transition-colors">
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-white font-medium">{{t .Lang "nav.providers"}}</h3>
+                <p class="text-sm text-slate-500 mt-1">{{t .Lang "store.subtitle"}}</p>
+            </a>
+
+            <button onclick="document.getElementById('run-job-modal').classList.remove('hidden')" class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-4 hover:border-emerald-500/50 transition-colors group text-left w-full">
+                <div class="w-10 h-10 bg-rose-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-rose-500/20 transition-colors">
+                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-white font-medium">{{t .Lang "dashboard.run_job"}}</h3>
+                <p class="text-sm text-slate-500 mt-1">{{t .Lang "jobs.create_hint"}}</p>
+            </button>
+        </div>
+    </div>
+</div>
+    </main>
+</div>
+
+<!-- Discover Modal -->
+<div id="discover-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="document.getElementById('discover-modal').classList.add('hidden')"></div>
+        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-md">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">{{t .Lang "discover.title"}}</h3>
+                <button onclick="document.getElementById('discover-modal').classList.add('hidden')" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form hx-post="/api/v1/machines/discover" hx-swap="none" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">{{t .Lang "discover.method"}}</label>
+                    <select name="method" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="dhcp">{{t .Lang "discover.dhcp"}}</option>
+                        <option value="ip_range">{{t .Lang "discover.ip_range"}}</option>
+                        <option value="pxe">{{t .Lang "discover.pxe"}}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">{{t .Lang "discover.subnet"}}</label>
+                    <input type="text" name="ip_range" placeholder="192.168.1.0/24"
+                        class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 font-mono">
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="document.getElementById('discover-modal').classList.add('hidden')"
+                        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 transition-colors">
+                        {{t .Lang "common.cancel"}}
+                    </button>
+                    <button type="submit" onclick="document.getElementById('discover-modal').classList.add('hidden')"
+                        class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-lg text-sm text-white font-medium transition-colors">
+                        {{t .Lang "discover.start"}}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Run Job Modal -->
+<div id="run-job-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="closeJobModal()"></div>
+        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">{{t .Lang "dashboard.run_job"}}</h3>
+                <button onclick="closeJobModal()" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form hx-post="/api/v1/jobs" hx-swap="none" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">{{t .Lang "jobs.machine"}}</label>
+                    <select name="machine_id" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="">-- {{t .Lang "common.select"}} --</option>
+                        {{range .RecentMachines}}
+                        <option value="{{.ID}}">{{.Hostname}} ({{.IPAddress}})</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">{{t .Lang "jobs.type"}}</label>
+                    <select name="type" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="audit">{{t .Lang "job_type.audit"}}</option>
+                        <option value="config_raid">{{t .Lang "job_type.config_raid"}}</option>
+                        <option value="install_os">{{t .Lang "job_type.install_os"}}</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeJobModal()"
+                        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 transition-colors">
+                        {{t .Lang "common.cancel"}}
+                    </button>
+                    <button type="submit" onclick="closeJobModal()"
+                        class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-lg text-sm text-white font-medium transition-colors">
+                        {{t .Lang "dashboard.run_job"}}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function closeJobModal() {
+    document.getElementById('run-job-modal').classList.add('hidden');
+}
+</script>
+</body>
+</html>
+{{end}}

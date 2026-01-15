@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .glass-card {
+        @apply bg-surface/80 backdrop-blur-sm border border-border rounded-lg shadow-xl;
+    }
+
+    .btn-primary {
+        @apply px-4 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition-colors font-medium;
+    }
+
+    .btn-destructive {
+        @apply px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600 transition-colors font-medium;
+    }
+
+    .btn-ghost {
+        @apply px-4 py-2 border border-border text-slate-300 rounded hover:border-emerald-500/50 hover:text-emerald-400 transition-all;
+    }
+
+    .badge {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    }
+
+    .badge-online {
+        @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+    }
+
+    .badge-error {
+        @apply bg-rose-500/20 text-rose-400 border border-rose-500/30;
+    }
+
+    .badge-warning {
+        @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+    }
+
+    .badge-info {
+        @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+    }
+
+    .terminal {
+        @apply glass-card overflow-hidden;
+    }
+
+    .terminal-header {
+        @apply flex items-center px-4 py-3 bg-surface border-b border-border;
+    }
+
+    .terminal-body {
+        @apply p-4 font-mono text-sm bg-canvas/50;
+    }
+
+    .dot-pulse {
+        @apply inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse;
+    }
+
+    .input {
+        @apply w-full px-3 py-2 bg-surface border border-border rounded text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 transition-colors;
+    }
+}

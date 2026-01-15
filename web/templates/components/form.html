@@ -1,0 +1,136 @@
+{{/* Form Component */}}
+
+{{/* Basic Form */}}
+{{define "form"}}
+<form action="{{.action}}"
+      method="{{if .method}}{{.method}}{{else}}POST{{end}}"
+      {{if .enctype}}enctype="{{.enctype}}"{{end}}
+      class="{{.class}}">
+    {{.content}}
+</form>
+{{end}}
+
+{{/* Form Group (Fieldset) */}}
+{{define "form-group"}}
+<fieldset class="border border-slate-800 rounded-lg p-4 {{.class}}">
+    {{if .legend}}
+    <legend class="text-sm font-semibold text-white px-2">{{.legend}}</legend>
+    {{end}}
+    <div class="space-y-4">
+        {{.content}}
+    </div>
+</fieldset>
+{{end}}
+
+{{/* Form Row (Horizontal Layout) */}}
+{{define "form-row"}}
+<div class="grid grid-cols-1 md:grid-cols-{{if .cols}}{{.cols}}{{else}}2{{end}} gap-4 {{.class}}">
+    {{.content}}
+</div>
+{{end}}
+
+{{/* Form Actions (Button Group) */}}
+{{define "form-actions"}}
+<div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 {{.class}}">
+    {{.content}}
+</div>
+{{end}}
+
+{{/* Validation Error Message */}}
+{{define "form-error"}}
+{{if .error}}
+<div class="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 {{.class}}">
+    <div class="flex items-start">
+        <svg class="w-5 h-5 text-rose-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        </svg>
+        <div class="ml-3">
+            <p class="text-sm text-rose-400">{{.error}}</p>
+        </div>
+    </div>
+</div>
+{{end}}
+{{end}}
+
+{{/* Success Message */}}
+{{define "form-success"}}
+{{if .message}}
+<div class="rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-3 {{.class}}">
+    <div class="flex items-start">
+        <svg class="w-5 h-5 text-emerald-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <div class="ml-3">
+            <p class="text-sm text-emerald-400">{{.message}}</p>
+        </div>
+    </div>
+</div>
+{{end}}
+{{end}}
+
+{{/* Form with HTMX Support */}}
+{{define "form-htmx"}}
+<form hx-{{if .hxMethod}}{{.hxMethod}}{{else}}post{{end}}="{{.hxPost}}"
+      {{if .hxTarget}}hx-target="{{.hxTarget}}"{{end}}
+      {{if .hxSwap}}hx-swap="{{.hxSwap}}"{{end}}
+      {{if .hxIndicator}}hx-indicator="{{.hxIndicator}}"{{end}}
+      class="{{.class}}">
+    {{.content}}
+</form>
+{{end}}
+
+{{/* Field Error (Inline) */}}
+{{define "field-error"}}
+{{if .error}}
+<p class="text-xs text-rose-400 mt-1">{{.error}}</p>
+{{end}}
+{{end}}
+
+{{/* Form with Alpine.js Validation */}}
+{{define "form-alpine"}}
+<form x-data="{
+        formData: {{if .initialData}}{{.initialData}}{{else}}{}{{end}},
+        errors: {},
+        submitting: false,
+        async submitForm() {
+            this.submitting = true;
+            this.errors = {};
+            try {
+                const response = await fetch('{{.action}}', {
+                    method: '{{if .method}}{{.method}}{{else}}POST{{end}}',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(this.formData)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    this.errors = data.errors || {_form: data.error};
+                } else {
+                    {{if .onSuccess}}{{.onSuccess}}{{else}}window.location.reload();{{end}}
+                }
+            } catch (error) {
+                this.errors = {_form: 'Network error'};
+            } finally {
+                this.submitting = false;
+            }
+        }
+      }"
+      @submit.prevent="submitForm()"
+      class="{{.class}}">
+    <div x-show="errors._form" class="mb-4">
+        <div class="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3">
+            <p class="text-sm text-rose-400" x-text="errors._form"></p>
+        </div>
+    </div>
+    {{.content}}
+</form>
+{{end}}
+
+{{/* Loading Spinner (for HTMX) */}}
+{{define "form-spinner"}}
+<div class="htmx-indicator {{.class}}">
+    <div class="flex items-center justify-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+        <span class="ml-3 text-slate-400">{{if .text}}{{.text}}{{else}}Loading...{{end}}</span>
+    </div>
+</div>
+{{end}}

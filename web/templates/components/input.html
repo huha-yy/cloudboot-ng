@@ -1,0 +1,159 @@
+{{/* Input Component */}}
+
+{{/* Text Input */}}
+{{define "input-text"}}
+<div class="{{if .containerClass}}{{.containerClass}}{{end}}">
+    {{if .label}}
+    <label class="block text-sm font-medium text-slate-300 mb-2">
+        {{.label}}
+        {{if .required}}<span class="text-rose-500">*</span>{{end}}
+    </label>
+    {{end}}
+    <input type="text"
+           name="{{.name}}"
+           id="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}"
+           value="{{.value}}"
+           placeholder="{{.placeholder}}"
+           class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors {{.class}}"
+           {{if .required}}required{{end}}
+           {{if .disabled}}disabled{{end}}
+           {{if .readonly}}readonly{{end}}>
+    {{if .hint}}
+    <p class="text-xs text-slate-500 mt-1">{{.hint}}</p>
+    {{end}}
+</div>
+{{end}}
+
+{{/* Select Dropdown */}}
+{{define "input-select"}}
+<div class="{{if .containerClass}}{{.containerClass}}{{end}}">
+    {{if .label}}
+    <label class="block text-sm font-medium text-slate-300 mb-2">
+        {{.label}}
+        {{if .required}}<span class="text-rose-500">*</span>{{end}}
+    </label>
+    {{end}}
+    <select name="{{.name}}"
+            id="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}"
+            class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500 transition-colors {{.class}}"
+            {{if .required}}required{{end}}
+            {{if .disabled}}disabled{{end}}>
+        {{if .placeholder}}
+        <option value="">{{.placeholder}}</option>
+        {{end}}
+        {{range .options}}
+        <option value="{{.value}}" {{if .selected}}selected{{end}}>{{.label}}</option>
+        {{end}}
+    </select>
+    {{if .hint}}
+    <p class="text-xs text-slate-500 mt-1">{{.hint}}</p>
+    {{end}}
+</div>
+{{end}}
+
+{{/* Checkbox */}}
+{{define "input-checkbox"}}
+<div class="flex items-center {{if .containerClass}}{{.containerClass}}{{end}}">
+    <input type="checkbox"
+           name="{{.name}}"
+           id="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}"
+           value="{{.value}}"
+           class="w-4 h-4 text-emerald-500 bg-slate-900 border-slate-700 rounded focus:ring-emerald-500 focus:ring-2 {{.class}}"
+           {{if .checked}}checked{{end}}
+           {{if .disabled}}disabled{{end}}>
+    {{if .label}}
+    <label for="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}" class="ml-2 text-sm text-slate-300">
+        {{.label}}
+    </label>
+    {{end}}
+</div>
+{{end}}
+
+{{/* Radio Button */}}
+{{define "input-radio"}}
+<div class="flex items-center {{if .containerClass}}{{.containerClass}}{{end}}">
+    <input type="radio"
+           name="{{.name}}"
+           id="{{if .id}}{{.id}}{{else}}{{.name}}_{{.value}}{{end}}"
+           value="{{.value}}"
+           class="w-4 h-4 text-emerald-500 bg-slate-900 border-slate-700 focus:ring-emerald-500 focus:ring-2 {{.class}}"
+           {{if .checked}}checked{{end}}
+           {{if .disabled}}disabled{{end}}>
+    {{if .label}}
+    <label for="{{if .id}}{{.id}}{{else}}{{.name}}_{{.value}}{{end}}" class="ml-2 text-sm text-slate-300">
+        {{.label}}
+    </label>
+    {{end}}
+</div>
+{{end}}
+
+{{/* Textarea */}}
+{{define "input-textarea"}}
+<div class="{{if .containerClass}}{{.containerClass}}{{end}}">
+    {{if .label}}
+    <label class="block text-sm font-medium text-slate-300 mb-2">
+        {{.label}}
+        {{if .required}}<span class="text-rose-500">*</span>{{end}}
+    </label>
+    {{end}}
+    <textarea name="{{.name}}"
+              id="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}"
+              rows="{{if .rows}}{{.rows}}{{else}}4{{end}}"
+              placeholder="{{.placeholder}}"
+              class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors resize-none {{.class}}"
+              {{if .required}}required{{end}}
+              {{if .disabled}}disabled{{end}}
+              {{if .readonly}}readonly{{end}}>{{.value}}</textarea>
+    {{if .hint}}
+    <p class="text-xs text-slate-500 mt-1">{{.hint}}</p>
+    {{end}}
+</div>
+{{end}}
+
+{{/* File Upload */}}
+{{define "input-file"}}
+<div class="{{if .containerClass}}{{.containerClass}}{{end}}">
+    {{if .label}}
+    <label class="block text-sm font-medium text-slate-300 mb-2">
+        {{.label}}
+        {{if .required}}<span class="text-rose-500">*</span>{{end}}
+    </label>
+    {{end}}
+    <div class="relative">
+        <input type="file"
+               name="{{.name}}"
+               id="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}"
+               accept="{{.accept}}"
+               class="hidden"
+               {{if .required}}required{{end}}
+               {{if .disabled}}disabled{{end}}
+               {{if .multiple}}multiple{{end}}>
+        <label for="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}"
+               class="flex items-center justify-center px-4 py-2 bg-slate-900 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-emerald-500 transition-colors {{.class}}">
+            <span class="text-slate-400">{{if .placeholder}}{{.placeholder}}{{else}}Choose file...{{end}}</span>
+        </label>
+    </div>
+    {{if .hint}}
+    <p class="text-xs text-slate-500 mt-1">{{.hint}}</p>
+    {{end}}
+</div>
+{{end}}
+
+{{/* Switch Toggle */}}
+{{define "input-switch"}}
+<div class="flex items-center justify-between {{if .containerClass}}{{.containerClass}}{{end}}">
+    {{if .label}}
+    <label class="text-sm text-slate-300">{{.label}}</label>
+    {{end}}
+    <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox"
+               name="{{.name}}"
+               id="{{if .id}}{{.id}}{{else}}{{.name}}{{end}}"
+               value="{{.value}}"
+               class="sr-only peer"
+               {{if .checked}}checked{{end}}
+               {{if .disabled}}disabled{{end}}>
+        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+    </label>
+</div>
+{{end}}

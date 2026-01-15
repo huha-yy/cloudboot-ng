@@ -1,0 +1,48 @@
+{{/* Button Component */}}
+
+{{/* Primary Button */}}
+{{define "btn-primary"}}
+<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
+        class="btn-primary {{.class}}"
+        {{if .disabled}}disabled{{end}}
+        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    {{.text}}
+</button>
+{{end}}
+
+{{/* Secondary Button */}}
+{{define "btn-secondary"}}
+<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
+        class="btn-secondary {{.class}}"
+        {{if .disabled}}disabled{{end}}
+        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    {{.text}}
+</button>
+{{end}}
+
+{{/* Ghost Button */}}
+{{define "btn-ghost"}}
+<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
+        class="btn-ghost {{.class}}"
+        {{if .disabled}}disabled{{end}}
+        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    {{.text}}
+</button>
+{{end}}
+
+{{/* Destructive Button */}}
+{{define "btn-destructive"}}
+<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
+        class="btn-destructive {{.class}}"
+        {{if .disabled}}disabled{{end}}
+        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    {{.text}}
+</button>
+{{end}}
+
+{{/* Link Button */}}
+{{define "btn-link"}}
+<a href="{{.href}}" class="btn-primary {{.class}}">
+    {{.text}}
+</a>
+{{end}}

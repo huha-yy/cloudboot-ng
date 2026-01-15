@@ -1,0 +1,310 @@
+package api
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/cloudboot/cloudboot-ng/internal/core/cspm"
+	"github.com/labstack/echo/v4"
+)
+
+func setupStoreTest(t *testing.T) (*cspm.PluginManager, string) {
+	// Create temp store directory
+	tempDir := t.TempDir()
+	pm, err := cspm.NewPluginManager(tempDir)
+	if err != nil {
+		t.Fatalf("Failed to create plugin manager: %v", err)
+	}
+	return pm, tempDir
+}
+
+func TestStoreHandler_ListProviders(t *testing.T) {
+	pm, _ := setupStoreTest(t)
+	handler := NewStoreHandler(pm)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/store/providers", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if err := handler.ListProviders(c); err != nil {
+		t.Fatalf("ListProviders() error = %v", err)
+	}
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("Status = %v, want %v", rec.Code, http.StatusOK)
+	}
+
+	var response map[string]interface{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
+		t.Fatalf("Failed to unmarshal response: %v", err)
+	}
+
+	if _, ok := response["providers"]; !ok {
+		t.Error("Response should contain 'providers' field")
+	}
+
+	if _, ok := response["total"]; !ok {
+		t.Error("Response should contain 'total' field")
+	}
+}
+
+func TestStoreHandler_ImportProvider(t *testing.T) {
+	pm, tempDir := setupStoreTest(t)
+	handler := NewStoreHandler(pm)
+
+	// Create a test .cbp file
+	testFile := filepath.Join(tempDir, "test-provider.cbp")
+	content := []byte("#!/bin/bash\necho 'test provider'")
+	if err := os.WriteFile(testFile, content, 0755); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Create multipart form
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+
+	part, err := writer.CreateFormFile("file", "test-provider.cbp")
+	if err != nil {
+		t.Fatalf("Failed to create form file: %v", err)
+	}
+
+	fileContent, err := os.ReadFile(testFile)
+	if err != nil {
+		t.Fatalf("Failed to read test file: %v", err)
+	}
+
+	if _, err := io.Copy(part, bytes.NewReader(fileContent)); err != nil {
+		t.Fatalf("Failed to copy file content: %v", err)
+	}
+
+	writer.Close()
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/store/import", body)
+	req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if err := handler.ImportProvider(c); err != nil {
+		t.Fatalf("ImportProvider() error = %v", err)
+	}
+
+	if rec.Code != http.StatusCreated {
+		t.Errorf("Status = %v, want %v", rec.Code, http.StatusCreated)
+	}
+
+	var response map[string]interface{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
+		t.Fatalf("Failed to unmarshal response: %v", err)
+	}
+
+	if response["status"] != "ok" {
+		t.Errorf("Status = %v, want ok", response["status"])
+	}
+
+	if _, ok := response["provider"]; !ok {
+		t.Error("Response should contain 'provider' field")
+	}
+}
+
+func TestStoreHandler_ImportProvider_InvalidFile(t *testing.T) {
+	pm, _ := setupStoreTest(t)
+	handler := NewStoreHandler(pm)
+
+	tests := []struct {
+		name           string
+		filename       string
+		wantStatusCode int
+	}{
+		{
+			name:           "Non-.cbp file",
+			filename:       "test.txt",
+			wantStatusCode: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create multipart form with wrong extension
+			body := new(bytes.Buffer)
+			writer := multipart.NewWriter(body)
+
+			part, err := writer.CreateFormFile("file", tt.filename)
+			if err != nil {
+				t.Fatalf("Failed to create form file: %v", err)
+			}
+
+			if _, err := io.Copy(part, bytes.NewReader([]byte("test"))); err != nil {
+				t.Fatalf("Failed to copy file content: %v", err)
+			}
+
+			writer.Close()
+
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/store/import", body)
+			req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			if err := handler.ImportProvider(c); err != nil {
+				t.Fatalf("ImportProvider() error = %v", err)
+			}
+
+			if rec.Code != tt.wantStatusCode {
+				t.Errorf("Status = %v, want %v", rec.Code, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+func TestStoreHandler_ImportProvider_NoFile(t *testing.T) {
+	pm, _ := setupStoreTest(t)
+	handler := NewStoreHandler(pm)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/store/import", nil)
+	req.Header.Set(echo.HeaderContentType, "multipart/form-data")
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if err := handler.ImportProvider(c); err != nil {
+		t.Fatalf("ImportProvider() error = %v", err)
+	}
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("Status = %v, want %v", rec.Code, http.StatusBadRequest)
+	}
+}
+
+func TestStoreHandler_GetProvider(t *testing.T) {
+	pm, tempDir := setupStoreTest(t)
+	handler := NewStoreHandler(pm)
+
+	// Import a test provider first
+	testFile := filepath.Join(tempDir, "test-provider.cbp")
+	content := []byte("#!/bin/bash\necho 'test provider'")
+	if err := os.WriteFile(testFile, content, 0755); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	info, err := pm.ImportProvider(testFile)
+	if err != nil {
+		t.Fatalf("Failed to import provider: %v", err)
+	}
+
+	tests := []struct {
+		name           string
+		providerID     string
+		wantStatusCode int
+	}{
+		{
+			name:           "Get existing provider",
+			providerID:     info.ID,
+			wantStatusCode: http.StatusOK,
+		},
+		{
+			name:           "Get non-existent provider",
+			providerID:     "non-existent-id",
+			wantStatusCode: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/api/v1/store/providers/"+tt.providerID, nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.SetParamNames("id")
+			c.SetParamValues(tt.providerID)
+
+			if err := handler.GetProvider(c); err != nil {
+				t.Fatalf("GetProvider() error = %v", err)
+			}
+
+			if rec.Code != tt.wantStatusCode {
+				t.Errorf("Status = %v, want %v", rec.Code, tt.wantStatusCode)
+			}
+
+			if tt.wantStatusCode == http.StatusOK {
+				var response map[string]interface{}
+				if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
+					t.Fatalf("Failed to unmarshal response: %v", err)
+				}
+
+				if response["id"] != info.ID {
+					t.Errorf("Provider ID = %v, want %v", response["id"], info.ID)
+				}
+			}
+		})
+	}
+}
+
+func TestStoreHandler_DeleteProvider(t *testing.T) {
+	pm, tempDir := setupStoreTest(t)
+	handler := NewStoreHandler(pm)
+
+	// Import a test provider first
+	testFile := filepath.Join(tempDir, "test-provider.cbp")
+	content := []byte("#!/bin/bash\necho 'test provider'")
+	if err := os.WriteFile(testFile, content, 0755); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	info, err := pm.ImportProvider(testFile)
+	if err != nil {
+		t.Fatalf("Failed to import provider: %v", err)
+	}
+
+	tests := []struct {
+		name           string
+		providerID     string
+		wantStatusCode int
+	}{
+		{
+			name:           "Delete existing provider",
+			providerID:     info.ID,
+			wantStatusCode: http.StatusOK,
+		},
+		{
+			name:           "Delete non-existent provider",
+			providerID:     "non-existent-id",
+			wantStatusCode: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodDelete, "/api/v1/store/providers/"+tt.providerID, nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.SetParamNames("id")
+			c.SetParamValues(tt.providerID)
+
+			if err := handler.DeleteProvider(c); err != nil {
+				t.Fatalf("DeleteProvider() error = %v", err)
+			}
+
+			if rec.Code != tt.wantStatusCode {
+				t.Errorf("Status = %v, want %v", rec.Code, tt.wantStatusCode)
+			}
+
+			if tt.wantStatusCode == http.StatusOK {
+				// Verify provider is deleted
+				_, err := pm.GetProvider(tt.providerID)
+				if err == nil {
+					t.Error("Provider should be deleted")
+				}
+			}
+		})
+	}
+}

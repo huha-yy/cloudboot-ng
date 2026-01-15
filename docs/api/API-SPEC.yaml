@@ -1,0 +1,763 @@
+openapi: 3.0.3
+info:
+  title: CloudBoot Core API
+  description: |
+    CloudBoot NG 核心API规范
+    包含两部分：
+    1. Boot API (Agent ↔ Core) - BootOS Agent与Server通信
+    2. External API (Terraform/UI) - 外部系统集成接口
+  version: 1.0.0
+  contact:
+    name: CloudBoot Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8080
+    description: 本地开发环境
+  - url: http://{core_host}:{core_port}
+    description: 部署环境
+    variables:
+      core_host:
+        default: 192.168.1.100
+      core_port:
+        default: '8080'
+
+tags:
+  - name: Boot
+    description: BootOS Agent 专用接口
+  - name: Machine
+    description: 物理机资产管理 (Terraform友好)
+  - name: Job
+    description: 任务编排与状态
+  - name: Profile
+    description: OS安装模板管理
+  - name: Store
+    description: Private Store (Provider库)
+  - name: Stream
+    description: 实时数据流 (SSE)
+
+paths:
+  # ============ Boot API ============
+  /api/boot/v1/register:
+    post:
+      tags: [Boot]
+      summary: Agent上线注册/心跳
+      description: |
+        BootOS Agent 启动时调用此接口进行注册，同时作为心跳保活机制。
+
+        * **MAC地址**: 唯一标识符，必须提供
+        * **硬件指纹**: 标准化JSON格式，用于硬件变更检测
+        * **响应**: 返回Server是否有待执行任务
+      operationId: registerAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mac, ip]
+              properties:
+                mac:
+                  type: string
+                  example: "aa:bb:cc:dd:ee:ff"
+                  description: Agent的MAC地址
+                ip:
+                  type: string
+                  example: "192.168.1.100"
+                  description: Agent的DHCP分配IP
+                fingerprint:
+                  $ref: '#/components/schemas/HardwareFingerprint'
+      responses:
+        '200':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, error]
+                  machine_id:
+                    type: string
+                    description: Core分配的Machine ID
+                  task_id:
+                    type: string
+                    nullable: true
+                    description: 如果有待执行任务，返回task_id；否则null
+
+  /api/boot/v1/task:
+    get:
+      tags: [Boot]
+      summary: Agent轮询任务
+      description: |
+        Agent 定期轮询此接口获取待执行任务。
+
+        * **轮询频率**: 建议5-10秒一次
+        * **如果无任务**: 返回 task_id=null，Agent继续轮询
+        * **如果有任务**: 返回TaskSpec，Agent下载Provider并执行
+      operationId: getTask
+      parameters:
+        - name: mac
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "aa:bb:cc:dd:ee:ff"
+          description: Agent的MAC地址
+      responses:
+        '200':
+          description: 任务指令
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskSpec'
+
+  /api/boot/v1/logs:
+    post:
+      tags: [Boot]
+      summary: Agent上报日志
+      description: |
+        Provider 执行过程中产生的日志（Stderr），由Agent上报至Core。
+        Core收到日志后存储并通过SSE推送至Web UI。
+      operationId: uploadLogs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task_id:
+                  type: string
+                job_id:
+                  type: string
+                logs:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      ts:
+                        type: string
+                        format: date-time
+                      level:
+                        type: string
+                        enum: [DEBUG, INFO, WARN, ERROR]
+                      component:
+                        type: string
+                      msg:
+                        type: string
+      responses:
+        '200':
+          description: 日志接收成功
+
+  /api/boot/v1/status:
+    post:
+      tags: [Boot]
+      summary: Agent上报任务状态
+      description: |
+        任务执行完毕，Agent上报最终状态（success/failed）。
+      operationId: reportStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_id, status]
+              properties:
+                task_id:
+                  type: string
+                status:
+                  type: string
+                  enum: [success, failed]
+                error_msg:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: 状态已记录
+
+  # ============ External API (Machine) ============
+  /api/v1/machines:
+    get:
+      tags: [Machine]
+      summary: 查询所有物理机
+      description: 获取已纳管或已发现的物理机列表（支持分页、过滤）
+      operationId: listMachines
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [discovered, ready, installing, active, error]
+          description: 按状态过滤
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: 机器列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Machine'
+
+    post:
+      tags: [Machine]
+      summary: 创建/纳管机器
+      description: |
+        手工纳管新机器或导入批量机器列表（CSV/JSON）。
+        也可通过PXE启动自动发现。
+      operationId: createMachine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mac, hostname]
+              properties:
+                mac:
+                  type: string
+                  example: "aa:bb:cc:dd:ee:ff"
+                hostname:
+                  type: string
+                  example: "server-001"
+                ip:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: 机器创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Machine'
+
+  /api/v1/machines/{id}:
+    get:
+      tags: [Machine]
+      summary: 查询单个机器详情
+      operationId: getMachine
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 机器详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Machine'
+
+    delete:
+      tags: [Machine]
+      summary: 删除/下架机器
+      operationId: deleteMachine
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 删除成功
+
+  # ============ External API (Job/Provision) ============
+  /api/v1/machines/{id}/provision:
+    post:
+      tags: [Job]
+      summary: 触发安装任务
+      description: |
+        在指定机器上触发OS安装任务。
+
+        * **profile_id**: OS模板ID（如 "os_centos7_raid10"）
+        * **config**: 可选的运行时配置覆盖 (Overlay)
+      operationId: provisionMachine
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [profile_id]
+              properties:
+                profile_id:
+                  type: string
+                  example: "os_centos7_raid10"
+                config:
+                  type: object
+                  nullable: true
+                  description: User Overlay - 覆盖默认参数
+      responses:
+        '202':
+          description: 任务已接受（异步）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+
+  /api/v1/jobs:
+    get:
+      tags: [Job]
+      summary: 查询所有任务
+      operationId: listJobs
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, running, success, failed]
+        - name: machine_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 任务列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Job'
+
+  /api/v1/jobs/{id}:
+    get:
+      tags: [Job]
+      summary: 查询单个任务
+      operationId: getJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+
+    delete:
+      tags: [Job]
+      summary: 取消任务（仅在运行中的任务）
+      operationId: cancelJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 任务已取消
+
+  # ============ External API (Profile) ============
+  /api/v1/profiles:
+    get:
+      tags: [Profile]
+      summary: 查询OS安装模板
+      operationId: listProfiles
+      responses:
+        '200':
+          description: 模板列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OSProfile'
+
+    post:
+      tags: [Profile]
+      summary: 创建新的OS模板
+      operationId: createProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OSProfile'
+      responses:
+        '201':
+          description: 模板创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OSProfile'
+
+  /api/v1/profiles/{id}/preview:
+    post:
+      tags: [Profile]
+      summary: 预览生成的Kickstart/Autoyast
+      description: |
+        不实际保存，仅返回生成的配置脚本内容。
+        用于验证模板是否正确。
+      operationId: previewProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config:
+                  type: object
+      responses:
+        '200':
+          description: 预览成功
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "install\nauth --useshadow --passalgo=sha512\nbootloader..."
+
+  # ============ External API (Store) ============
+  /api/v1/store/import:
+    post:
+      tags: [Store]
+      summary: 导入Provider包 (.cbp)
+      description: |
+        导入硬件Provider驱动包（如RAID卡驱动）。
+
+        * **验证**: watermark签名、License检查
+        * **存储**: 加密存储在Core的私有库中
+        * **使用**: 任务下发时自动分发
+      operationId: importProvider
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Provider导入成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  version:
+                    type: string
+
+  /api/v1/store/providers:
+    get:
+      tags: [Store]
+      summary: 查询已导入的Provider
+      operationId: listProviders
+      responses:
+        '200':
+          description: Provider列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        version:
+                          type: string
+                        watermark:
+                          type: object
+
+  # ============ Stream API ============
+  /api/stream/logs/{job_id}:
+    get:
+      tags: [Stream]
+      summary: 实时日志流 (Server-Sent Events)
+      description: |
+        订阅任务的实时日志。
+        浏览器保持连接，Core推送日志事件。
+
+        * **格式**: `data: <HTML fragment>\n\n`
+        * **内容**: 预格式化的HTML，包含颜色和样式
+        * **更新频率**: 日志到达时立即推送（最高频率受网络影响）
+      operationId: streamLogs
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SSE 流建立成功，开始推送日志
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: |
+                  data: <div class="text-emerald-500">[RAID] Probing controller...</div>
+                  data: <div class="text-emerald-500">[RAID] Found: LSI MegaRAID 3108</div>
+                  data: <div class="text-rose-500">[RAID] ERROR: Battery low</div>
+
+components:
+  schemas:
+    Machine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 机器的唯一标识符
+        hostname:
+          type: string
+          example: "server-001"
+        mac:
+          type: string
+          example: "aa:bb:cc:dd:ee:ff"
+          description: 主要网络接口MAC地址
+        ip:
+          type: string
+          nullable: true
+          example: "192.168.1.100"
+        status:
+          type: string
+          enum: [discovered, ready, installing, active, error]
+          description: |
+            * discovered: PXE启动发现，未就绪
+            * ready: 已就绪，可开始安装
+            * installing: 安装中
+            * active: 安装完成，激活
+            * error: 发生错误
+        hardware:
+          $ref: '#/components/schemas/HardwareFingerprint'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    HardwareFingerprint:
+      type: object
+      description: 标准化硬件指纹（schema v1.0）
+      properties:
+        schema_version:
+          type: string
+          example: "1.0"
+        system:
+          type: object
+          properties:
+            manufacturer:
+              type: string
+              example: "Hygon"
+            product_name:
+              type: string
+              example: "K100-W"
+            serial_number:
+              type: string
+        cpu:
+          type: object
+          properties:
+            arch:
+              type: string
+              example: "x86_64"
+            model:
+              type: string
+              example: "Hygon C86 7285"
+            cores:
+              type: integer
+              example: 32
+            sockets:
+              type: integer
+              example: 2
+        memory:
+          type: object
+          properties:
+            total_bytes:
+              type: integer
+              example: 137438953472
+            dimms:
+              type: array
+              items:
+                type: object
+                properties:
+                  slot:
+                    type: string
+                  size_bytes:
+                    type: integer
+                  speed:
+                    type: integer
+        storage_controllers:
+          type: array
+          items:
+            type: object
+            properties:
+              pci_id:
+                type: string
+              vendor:
+                type: string
+              model:
+                type: string
+              driver:
+                type: string
+        network_interfaces:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              mac:
+                type: string
+              speed:
+                type: integer
+              link:
+                type: boolean
+
+    TaskSpec:
+      type: object
+      description: Provider执行任务规范
+      properties:
+        task_id:
+          type: string
+        action:
+          type: string
+          enum: [probe, plan, apply]
+          description: |
+            * probe: 硬件探测，无修改
+            * plan: 干运行，计算变更
+            * apply: 实际执行
+        provider_url:
+          type: string
+          description: Provider .cbp包的下载URL
+        session_key:
+          type: string
+          description: 当前会话的解密密钥（AES-256）
+        config:
+          type: object
+          description: CSPM配置（JSON格式）
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        machine_id:
+          type: string
+        type:
+          type: string
+          enum: [audit, config_raid, install_os]
+        status:
+          type: string
+          enum: [pending, running, success, failed]
+        step_current:
+          type: string
+          example: "downloading_provider"
+          description: 当前执行步骤
+        logs_path:
+          type: string
+          description: 完整日志文件路径（可选）
+        error:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    OSProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          example: "CentOS 7 RAID10"
+        distro:
+          type: string
+          enum: [centos7, centos8, ubuntu20, ubuntu22, ky10, openeuler22]
+        config:
+          type: object
+          properties:
+            root_password_hash:
+              type: string
+            timezone:
+              type: string
+              example: "Asia/Shanghai"
+            partitions:
+              type: array
+              items:
+                type: object
+                properties:
+                  mount_point:
+                    type: string
+                  size:
+                    type: string
+                    example: "100GB"
+                  fstype:
+                    type: string
+                    example: "ext4"
+            network:
+              type: object
+              properties:
+                dhcp:
+                  type: boolean
+                dns:
+                  type: array
+                  items:
+                    type: string
+            packages:
+              type: array
+              items:
+                type: string
+        created_at:
+          type: string
+          format: date-time

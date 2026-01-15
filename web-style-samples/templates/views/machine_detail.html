@@ -1,0 +1,598 @@
+{{define "machine_detail.html"}}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Machine.Hostname}} - CloudBoot NG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="/static/css/output.css" rel="stylesheet">
+    <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/htmx-sse.js"></script>
+    <script defer src="/static/js/alpine.min.js"></script>
+</head>
+<body class="h-full bg-slate-950 text-slate-200 font-sans antialiased">
+<div class="flex h-full">
+    {{template "sidebar" .}}
+    <main class="flex-1 overflow-y-auto">
+<div class="p-6 max-w-7xl mx-auto" x-data="{ activeTab: 'overview' }">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center space-x-2 text-sm text-slate-400 mb-6">
+        <a href="/machines" class="hover:text-white transition-colors">{{t .Lang "machines.title"}}</a>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-white">{{.Machine.Hostname}}</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6 mb-6">
+        <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">{{.Machine.Hostname}}</h1>
+                    <p class="text-slate-400 font-mono text-sm mt-1">{{.Machine.ID}}</p>
+                    <div class="flex items-center space-x-4 mt-2">
+                        {{if eq .Machine.Status "active"}}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                            <span class="relative flex h-2 w-2 mr-1.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            {{t .Lang "status.active"}}
+                        </span>
+                        {{else if eq .Machine.Status "installing"}}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-500">
+                            <span class="w-2 h-2 bg-violet-500 rounded-full mr-1.5 animate-pulse"></span>
+                            {{t .Lang "status.installing"}}
+                        </span>
+                        {{else if eq .Machine.Status "ready"}}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500">
+                            <span class="w-2 h-2 bg-amber-500 rounded-full mr-1.5"></span>
+                            {{t .Lang "status.ready"}}
+                        </span>
+                        {{else if eq .Machine.Status "error"}}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-500">
+                            <span class="w-2 h-2 bg-rose-500 rounded-full mr-1.5"></span>
+                            {{t .Lang "status.error"}}
+                        </span>
+                        {{else}}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-400">
+                            <span class="w-2 h-2 bg-slate-500 rounded-full mr-1.5"></span>
+                            {{.Machine.Status}}
+                        </span>
+                        {{end}}
+                        <span class="text-slate-500 text-sm">{{t .Lang "machine_detail.last_seen"}}: {{.Machine.UpdatedAt.Format "2006-01-02 15:04:05"}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openJobModal('{{.Machine.ID}}', '{{.Machine.Hostname}}')"
+                    class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-lg text-sm text-white font-medium transition-colors flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>{{t .Lang "machines.run_job"}}</span>
+                </button>
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm text-slate-300 transition-colors flex items-center space-x-2">
+                        <span>{{t .Lang "common.more"}}</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 top-full mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-10">
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">{{t .Lang "machine_detail.edit"}}</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">{{t .Lang "machine_detail.refresh_fingerprint"}}</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">{{t .Lang "machine_detail.power_control"}}</a>
+                            <hr class="my-1 border-slate-700">
+                            <a href="#" class="block px-4 py-2 text-sm text-rose-500 hover:bg-slate-700">{{t .Lang "common.delete"}}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="border-b border-slate-800 mb-6">
+        <nav class="flex space-x-8">
+            <button @click="activeTab = 'overview'"
+                :class="activeTab === 'overview' ? 'text-emerald-500 border-emerald-500' : 'text-slate-400 border-transparent hover:text-white'"
+                class="py-3 px-1 border-b-2 font-medium text-sm transition-colors">
+                {{t .Lang "machine_detail.tab_overview"}}
+            </button>
+            <button @click="activeTab = 'hardware'"
+                :class="activeTab === 'hardware' ? 'text-emerald-500 border-emerald-500' : 'text-slate-400 border-transparent hover:text-white'"
+                class="py-3 px-1 border-b-2 font-medium text-sm transition-colors">
+                {{t .Lang "machine_detail.tab_hardware"}}
+            </button>
+            <button @click="activeTab = 'jobs'"
+                :class="activeTab === 'jobs' ? 'text-emerald-500 border-emerald-500' : 'text-slate-400 border-transparent hover:text-white'"
+                class="py-3 px-1 border-b-2 font-medium text-sm transition-colors">
+                {{t .Lang "machine_detail.tab_jobs"}}
+            </button>
+            <button @click="activeTab = 'logs'"
+                :class="activeTab === 'logs' ? 'text-emerald-500 border-emerald-500' : 'text-slate-400 border-transparent hover:text-white'"
+                class="py-3 px-1 border-b-2 font-medium text-sm transition-colors">
+                {{t .Lang "machine_detail.tab_logs"}}
+            </button>
+        </nav>
+    </div>
+
+    <!-- Tab: Overview -->
+    <div x-show="activeTab === 'overview'" x-transition>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Basic Information -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">{{t .Lang "machine_detail.basic_info"}}</h3>
+                <dl class="space-y-4">
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machines.ip_address"}}</dt>
+                        <dd class="text-white font-mono">{{.Machine.IPAddress}}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machines.mac_address"}}</dt>
+                        <dd class="text-white font-mono">{{.Machine.MacAddress}}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machine_detail.serial_number"}}</dt>
+                        <dd class="text-white font-mono">{{.Machine.HardwareSpec.System.SerialNumber}}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machine_detail.uuid"}}</dt>
+                        <dd class="text-white font-mono text-sm">{{.Machine.HardwareSpec.System.UUID}}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machine_detail.manufacturer"}}</dt>
+                        <dd class="text-white">{{.Machine.HardwareSpec.System.Manufacturer}}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machine_detail.product"}}</dt>
+                        <dd class="text-white">{{.Machine.HardwareSpec.System.ProductName}}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">{{t .Lang "machine_detail.hardware_summary"}}</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-emerald-500">{{.Machine.HardwareSpec.CPU.Cores}}</div>
+                        <div class="text-sm text-slate-400">{{t .Lang "machine_detail.cpu_cores"}}</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-emerald-500">{{.Machine.HardwareSpec.Memory.TotalGB}} GB</div>
+                        <div class="text-sm text-slate-400">{{t .Lang "machine_detail.memory"}}</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-emerald-500">{{len .Machine.HardwareSpec.Storage}}</div>
+                        <div class="text-sm text-slate-400">{{t .Lang "machine_detail.disks"}}</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-emerald-500">{{len .Machine.HardwareSpec.Network}}</div>
+                        <div class="text-sm text-slate-400">{{t .Lang "machine_detail.nics"}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIOS Information -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">{{t .Lang "machine_detail.bios_info"}}</h3>
+                <dl class="space-y-4">
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machine_detail.vendor"}}</dt>
+                        <dd class="text-white">{{.Machine.HardwareSpec.BIOS.Vendor}}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machine_detail.version"}}</dt>
+                        <dd class="text-white font-mono">{{.Machine.HardwareSpec.BIOS.Version}}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-slate-400">{{t .Lang "machine_detail.release_date"}}</dt>
+                        <dd class="text-white">{{.Machine.HardwareSpec.BIOS.ReleaseDate}}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Tags -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-white">{{t .Lang "machines.tags"}}</h3>
+                    <button class="text-sm text-emerald-500 hover:text-emerald-400 transition-colors">+ {{t .Lang "common.add"}}</button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    {{range .Machine.Tags}}
+                    <span class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm text-slate-300">{{.}}</span>
+                    {{else}}
+                    <p class="text-slate-500 text-sm">{{t .Lang "machine_detail.no_tags"}}</p>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Hardware -->
+    <div x-show="activeTab === 'hardware'" x-transition>
+        <div class="space-y-6">
+            <!-- CPU -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                    </svg>
+                    {{t .Lang "machine_detail.cpu"}}
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <dt class="text-slate-400 text-sm">{{t .Lang "machine_detail.model"}}</dt>
+                        <dd class="text-white mt-1">{{.Machine.HardwareSpec.CPU.Model}}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-400 text-sm">{{t .Lang "machine_detail.vendor"}}</dt>
+                        <dd class="text-white mt-1">{{.Machine.HardwareSpec.CPU.Vendor}}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-400 text-sm">{{t .Lang "machine_detail.cores_threads"}}</dt>
+                        <dd class="text-white mt-1 font-mono">{{.Machine.HardwareSpec.CPU.Cores}} / {{.Machine.HardwareSpec.CPU.Threads}}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-400 text-sm">{{t .Lang "machine_detail.frequency"}}</dt>
+                        <dd class="text-white mt-1 font-mono">{{.Machine.HardwareSpec.CPU.MHz}} MHz</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-400 text-sm">{{t .Lang "machine_detail.cache"}}</dt>
+                        <dd class="text-white mt-1 font-mono">{{.Machine.HardwareSpec.CPU.CacheKB}} KB</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-400 text-sm">{{t .Lang "machine_detail.architecture"}}</dt>
+                        <dd class="text-white mt-1">{{.Machine.HardwareSpec.CPU.Architecture}}</dd>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    {{t .Lang "machine_detail.memory"}} - {{.Machine.HardwareSpec.Memory.TotalGB}} GB ({{.Machine.HardwareSpec.Memory.UsedSlots}}/{{.Machine.HardwareSpec.Memory.Slots}} {{t .Lang "machine_detail.slots"}})
+                </h3>
+                {{if .Machine.HardwareSpec.Memory.DIMMs}}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-slate-400 border-b border-slate-800">
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.slot"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.size"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.type"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.speed"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.vendor"}}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {{range .Machine.HardwareSpec.Memory.DIMMs}}
+                            <tr>
+                                <td class="py-3 font-mono text-white">{{.Slot}}</td>
+                                <td class="py-3 font-mono text-white">{{.SizeGB}} GB</td>
+                                <td class="py-3 text-slate-300">{{.Type}}</td>
+                                <td class="py-3 font-mono text-slate-300">{{.SpeedMHz}} MHz</td>
+                                <td class="py-3 text-slate-300">{{.Vendor}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                {{end}}
+            </div>
+
+            <!-- Storage -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                    </svg>
+                    {{t .Lang "machine_detail.storage"}}
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-slate-400 border-b border-slate-800">
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.device"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.type"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.size"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.model"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.serial"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.transport"}}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {{range .Machine.HardwareSpec.Storage}}
+                            <tr>
+                                <td class="py-3 font-mono text-white">/dev/{{.Name}}</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded text-xs">{{.Type}}</span>
+                                </td>
+                                <td class="py-3 font-mono text-white">{{.SizeGB}} GB</td>
+                                <td class="py-3 text-slate-300">{{.Model}}</td>
+                                <td class="py-3 font-mono text-slate-400 text-xs">{{.Serial}}</td>
+                                <td class="py-3 text-slate-300">{{.Transport}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Network -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                    </svg>
+                    {{t .Lang "machine_detail.network"}}
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-slate-400 border-b border-slate-800">
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.interface"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machines.mac_address"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.driver"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.speed"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.vendor"}}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {{range .Machine.HardwareSpec.Network}}
+                            <tr>
+                                <td class="py-3 font-mono text-white">{{.Name}}</td>
+                                <td class="py-3 font-mono text-white">{{.MAC}}</td>
+                                <td class="py-3 text-slate-300">{{.Driver}}</td>
+                                <td class="py-3 text-slate-300">{{.Speed}}</td>
+                                <td class="py-3 text-slate-300">{{.Vendor}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RAID Controllers -->
+            {{if .Machine.HardwareSpec.RAID}}
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    {{t .Lang "machine_detail.raid_controllers"}}
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-slate-400 border-b border-slate-800">
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.controller"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.model"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.firmware"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.drives"}}</th>
+                                <th class="pb-3 font-medium">{{t .Lang "machine_detail.cache"}}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {{range .Machine.HardwareSpec.RAID}}
+                            <tr>
+                                <td class="py-3 font-mono text-white">{{.ID}}</td>
+                                <td class="py-3 text-slate-300">{{.Model}}</td>
+                                <td class="py-3 font-mono text-slate-300">{{.Firmware}}</td>
+                                <td class="py-3 text-slate-300">{{.PhysicalDrives}} physical</td>
+                                <td class="py-3 font-mono text-slate-300">{{.CacheSizeMB}} MB</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <!-- Tab: Jobs -->
+    <div x-show="activeTab === 'jobs'" x-transition>
+        <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-800/50">
+                        <tr class="text-left text-slate-400 text-sm">
+                            <th class="px-6 py-4 font-medium">{{t .Lang "jobs.id"}}</th>
+                            <th class="px-6 py-4 font-medium">{{t .Lang "jobs.type"}}</th>
+                            <th class="px-6 py-4 font-medium">{{t .Lang "machines.status"}}</th>
+                            <th class="px-6 py-4 font-medium">{{t .Lang "jobs.step"}}</th>
+                            <th class="px-6 py-4 font-medium">{{t .Lang "jobs.started"}}</th>
+                            <th class="px-6 py-4 font-medium">{{t .Lang "machines.actions"}}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        {{range .Jobs}}
+                        <tr class="hover:bg-slate-800/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <a href="/jobs/{{.ID}}" class="font-mono text-sm text-emerald-500 hover:text-emerald-400">{{.ID}}</a>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 bg-slate-800 rounded text-sm text-slate-300">{{.Type}}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                {{if eq .Status "completed"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                                    {{t $.Lang "status.completed"}}
+                                </span>
+                                {{else if eq .Status "running"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-500">
+                                    <span class="w-2 h-2 bg-violet-500 rounded-full mr-1.5 animate-pulse"></span>
+                                    {{t $.Lang "status.running"}}
+                                </span>
+                                {{else if eq .Status "failed"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-500">
+                                    {{t $.Lang "status.failed"}}
+                                </span>
+                                {{else}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-400">
+                                    {{.Status}}
+                                </span>
+                                {{end}}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-400">{{.StepCurrent}}</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                            <td class="px-6 py-4">
+                                <a href="/jobs/{{.ID}}" class="text-sm text-slate-400 hover:text-white transition-colors">View</a>
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                {{t .Lang "machine_detail.no_jobs"}}
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Logs (Matrix View) -->
+    <div x-show="activeTab === 'logs'" x-transition>
+        <div class="bg-black rounded-xl border border-slate-800 overflow-hidden shadow-2xl">
+            <!-- Terminal Header -->
+            <div class="flex items-center px-4 py-3 bg-slate-900 border-b border-slate-800">
+                <div class="flex space-x-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500/30"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500/30"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <div class="ml-4 text-xs text-slate-500 font-mono">root@{{.Machine.Hostname}}: ~</div>
+                <div class="ml-auto flex items-center space-x-2">
+                    <button id="clear-logs" class="px-2 py-1 text-xs text-slate-400 hover:text-white transition-colors">Clear</button>
+                    <button id="pause-logs" class="px-2 py-1 text-xs text-slate-400 hover:text-white transition-colors">Pause</button>
+                </div>
+            </div>
+            <!-- Log Stream Area -->
+            <div id="log-container" class="p-4 h-96 overflow-y-auto font-mono text-sm scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+                 hx-ext="sse"
+                 sse-connect="/api/stream/logs?machine_id={{.Machine.ID}}"
+                 sse-swap="message"
+                 hx-swap="beforeend">
+                <div class="text-emerald-500/90">> Connecting to log stream...</div>
+                <div class="text-slate-500">> Machine: {{.Machine.Hostname}} ({{.Machine.ID}})</div>
+                <div class="text-slate-500">> Waiting for events...</div>
+            </div>
+        </div>
+        <p class="text-slate-500 text-sm mt-4">{{t .Lang "machine_detail.logs_hint"}}</p>
+    </div>
+</div>
+
+<!-- Run Job Modal (reused from machines page) -->
+<div id="run-job-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="closeJobModal()"></div>
+        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">{{t .Lang "machines.run_job"}}</h3>
+                <button onclick="closeJobModal()" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form hx-post="/api/v1/jobs" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">{{t .Lang "jobs.machine"}}</label>
+                    <div class="flex items-center space-x-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg">
+                        <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p id="selected-machine-name" class="font-medium text-white">{{.Machine.Hostname}}</p>
+                            <p id="selected-machine-id" class="text-xs text-slate-500 font-mono">{{.Machine.ID}}</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="machine_id" name="machine_id" value="{{.Machine.ID}}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">{{t .Lang "jobs.type"}}</label>
+                    <select name="type" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="audit">{{t .Lang "job_type.audit"}}</option>
+                        <option value="config_raid">{{t .Lang "job_type.config_raid"}}</option>
+                        <option value="install_os">{{t .Lang "job_type.install_os"}}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">{{t .Lang "os_profiles.title"}}</label>
+                    <select name="profile_id" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="">-- {{t .Lang "common.select"}} --</option>
+                        {{range .Profiles}}
+                        <option value="{{.ID}}">{{.Name}} ({{.Distro}})</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeJobModal()"
+                        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 transition-colors">
+                        {{t .Lang "common.cancel"}}
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-lg text-sm text-white font-medium transition-colors">
+                        {{t .Lang "dashboard.run_job"}}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openJobModal(machineId, hostname) {
+    document.getElementById('machine_id').value = machineId;
+    document.getElementById('selected-machine-name').textContent = hostname;
+    document.getElementById('selected-machine-id').textContent = machineId;
+    document.getElementById('run-job-modal').classList.remove('hidden');
+}
+function closeJobModal() {
+    document.getElementById('run-job-modal').classList.add('hidden');
+}
+
+// Auto-scroll logs
+const logContainer = document.getElementById('log-container');
+const observer = new MutationObserver(() => {
+    logContainer.scrollTop = logContainer.scrollHeight;
+});
+observer.observe(logContainer, { childList: true });
+
+// Clear logs
+document.getElementById('clear-logs')?.addEventListener('click', () => {
+    logContainer.innerHTML = '<div class="text-emerald-500/90">> Log cleared</div>';
+});
+
+// Pause logs
+let paused = false;
+document.getElementById('pause-logs')?.addEventListener('click', (e) => {
+    paused = !paused;
+    e.target.textContent = paused ? 'Resume' : 'Pause';
+});
+</script>
+    </main>
+</div>
+</body>
+</html>
+{{end}}

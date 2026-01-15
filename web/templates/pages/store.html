@@ -1,0 +1,132 @@
+{{define "content-store"}}
+<div class="max-w-7xl mx-auto">
+    <!-- Import Section -->
+    <div class="glass-card mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-2">Import Provider Package</h2>
+                <p class="text-sm text-slate-400">Upload .cbp (CloudBoot Package) files to extend hardware capabilities</p>
+            </div>
+            <button class="btn-primary">
+                <span class="mr-2">📦</span>
+                Upload .cbp File
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="glass-card hover:border-emerald-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400 mb-1">Total Providers</p>
+                    <p class="text-2xl font-bold text-white">{{.stats.TotalProviders}}</p>
+                </div>
+                <div class="text-4xl text-emerald-500">📦</div>
+            </div>
+        </div>
+
+        <div class="glass-card hover:border-blue-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400 mb-1">RAID Controllers</p>
+                    <p class="text-2xl font-bold text-white">{{.stats.RaidProviders}}</p>
+                </div>
+                <div class="text-4xl text-blue-500">💾</div>
+            </div>
+        </div>
+
+        <div class="glass-card hover:border-violet-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400 mb-1">BIOS Tools</p>
+                    <p class="text-2xl font-bold text-white">{{.stats.BiosProviders}}</p>
+                </div>
+                <div class="text-4xl text-violet-500">⚙️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Providers Grid -->
+    <div class="glass-card">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-white">Installed Providers</h2>
+            <div class="flex gap-2">
+                <button class="btn-ghost">Filter</button>
+                <button class="btn-ghost">Sort</button>
+            </div>
+        </div>
+
+        {{if .providers}}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {{range .providers}}
+            <div class="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-emerald-500/30 transition-all">
+                <!-- Provider Header -->
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-white mb-1">{{.Name}}</h3>
+                        <p class="text-xs text-slate-500 font-mono">{{.Vendor}}</p>
+                    </div>
+                    <span class="badge badge-info text-xs">{{.Category}}</span>
+                </div>
+
+                <!-- Provider Info -->
+                <div class="space-y-2 mb-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Version:</span>
+                        <span class="font-mono text-slate-300">{{.Version}}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Size:</span>
+                        <span class="font-mono text-slate-300">{{.Size}}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Imported:</span>
+                        <span class="text-slate-400 text-xs">{{.CreatedAt.Format "2006-01-02"}}</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-2">
+                    <button class="btn-ghost flex-1 text-sm">Details</button>
+                    <button class="btn-destructive text-sm px-3">Delete</button>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">📦</div>
+            <p class="text-slate-400 mb-2">No providers installed yet</p>
+            <p class="text-sm text-slate-500 mb-4">Upload .cbp packages to extend hardware support</p>
+            <button class="btn-primary">
+                <span class="mr-2">⬆️</span>
+                Upload Your First Provider
+            </button>
+        </div>
+        {{end}}
+    </div>
+
+    <!-- Info Box -->
+    <div class="glass-card mt-6 bg-blue-500/5 border-blue-500/30">
+        <div class="flex items-start gap-3">
+            <div class="text-2xl">ℹ️</div>
+            <div class="flex-1">
+                <h3 class="text-white font-semibold mb-1">About CloudBoot Packages (.cbp)</h3>
+                <p class="text-sm text-slate-400 mb-2">
+                    CloudBoot Package files are encrypted, vendor-specific hardware configuration tools.
+                    They enable CloudBoot to manage RAID controllers, BIOS settings, and other hardware components
+                    from different manufacturers.
+                </p>
+                <p class="text-xs text-slate-500">
+                    Security: All providers run in isolated sandboxes and are automatically cleaned from memory after execution.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "content"}}
+{{template "content-store" .}}
+{{end}}

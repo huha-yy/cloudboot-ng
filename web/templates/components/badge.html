@@ -1,0 +1,70 @@
+{{/* Badge Component */}}
+
+{{/* Online Badge */}}
+{{define "badge-online"}}
+<span class="badge badge-online">
+    <span class="dot-pulse mr-2"></span>
+    {{if .text}}{{.text}}{{else}}Online{{end}}
+</span>
+{{end}}
+
+{{/* Offline Badge */}}
+{{define "badge-offline"}}
+<span class="badge badge-offline">
+    <span class="dot mr-2"></span>
+    {{if .text}}{{.text}}{{else}}Offline{{end}}
+</span>
+{{end}}
+
+{{/* Success Badge */}}
+{{define "badge-success"}}
+<span class="badge badge-success">
+    {{if .text}}{{.text}}{{else}}Success{{end}}
+</span>
+{{end}}
+
+{{/* Error Badge */}}
+{{define "badge-error"}}
+<span class="badge badge-error">
+    {{if .text}}{{.text}}{{else}}Error{{end}}
+</span>
+{{end}}
+
+{{/* Warning Badge */}}
+{{define "badge-warning"}}
+<span class="badge badge-warning">
+    {{if .text}}{{.text}}{{else}}Warning{{end}}
+</span>
+{{end}}
+
+{{/* Info Badge */}}
+{{define "badge-info"}}
+<span class="badge badge-info">
+    {{if .text}}{{.text}}{{else}}Info{{end}}
+</span>
+{{end}}
+
+{{/* Custom Badge */}}
+{{define "badge"}}
+<span class="badge {{.class}}">
+    {{if .icon}}<span class="{{.icon}} mr-1"></span>{{end}}
+    {{.text}}
+</span>
+{{end}}
+
+{{/* Status Badge (with color mapping) */}}
+{{define "badge-status"}}
+{{if eq .status "online"}}
+    {{template "badge-online" .}}
+{{else if eq .status "offline"}}
+    {{template "badge-offline" .}}
+{{else if eq .status "success"}}
+    {{template "badge-success" .}}
+{{else if eq .status "error"}}
+    {{template "badge-error" .}}
+{{else if eq .status "warning"}}
+    {{template "badge-warning" .}}
+{{else}}
+    {{template "badge-info" .}}
+{{end}}
+{{end}}

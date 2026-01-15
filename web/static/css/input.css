@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CloudBoot NG Custom Styles */
+
+@layer base {
+  body {
+    @apply bg-canvas text-slate-200 font-sans antialiased;
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+  }
+}
+
+@layer components {
+  /* Glass Card Component */
+  .glass-card {
+    @apply bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-lg shadow-sm;
+  }
+
+  /* Primary Button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500
+           text-white text-sm font-medium rounded-md shadow-lg shadow-emerald-900/20
+           transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-emerald-500/50;
+  }
+
+  /* Destructive Button */
+  .btn-destructive {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-rose-600 hover:bg-rose-500
+           text-white text-sm font-medium rounded-md shadow-lg shadow-rose-900/20
+           transition-all duration-200 active:translate-y-[1px];
+  }
+
+  /* Ghost Button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-transparent hover:bg-slate-800
+           text-slate-300 text-sm font-medium rounded-md transition-all duration-200;
+  }
+
+  /* Status Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-online {
+    @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
+  }
+
+  .badge-error {
+    @apply bg-rose-500/10 text-rose-400 border border-rose-500/20;
+  }
+
+  .badge-warning {
+    @apply bg-amber-500/10 text-amber-400 border border-amber-500/20;
+  }
+
+  .badge-info {
+    @apply bg-violet-500/10 text-violet-400 border border-violet-500/20;
+  }
+
+  /* Matrix Terminal */
+  .terminal {
+    @apply w-full bg-black rounded-lg border border-slate-800 overflow-hidden font-mono text-sm shadow-inner;
+  }
+
+  .terminal-header {
+    @apply flex items-center px-4 py-2 bg-slate-900 border-b border-slate-800;
+  }
+
+  .terminal-body {
+    @apply p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent;
+  }
+
+  /* Form Input */
+  .input {
+    @apply block w-full bg-slate-950 border border-slate-700 rounded-md py-2 px-3
+           text-slate-200 placeholder-slate-600
+           focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500
+           sm:text-sm transition-colors;
+  }
+
+  /* Topbar Glassmorphism */
+  .topbar-glass {
+    @apply sticky top-0 z-50 backdrop-blur-md bg-slate-900/70 border-b border-slate-800;
+  }
+}
+
+@layer utilities {
+  /* Pulsing Dot for "Live" status */
+  .dot-pulse {
+    @apply relative flex h-2 w-2;
+  }
+
+  .dot-pulse::before {
+    content: '';
+    @apply absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping;
+  }
+
+  .dot-pulse::after {
+    content: '';
+    @apply relative inline-flex rounded-full h-2 w-2 bg-emerald-500;
+  }
+}

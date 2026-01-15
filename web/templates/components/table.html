@@ -1,0 +1,241 @@
+{{/* Table Component */}}
+
+{{/* Basic Table */}}
+{{define "table"}}
+<div class="overflow-x-auto {{.containerClass}}">
+    <table class="w-full {{.class}}">
+        {{if .headers}}
+        <thead class="border-b border-slate-800">
+            <tr>
+                {{range .headers}}
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    {{.}}
+                </th>
+                {{end}}
+            </tr>
+        </thead>
+        {{end}}
+        <tbody class="divide-y divide-slate-800">
+            {{.content}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+
+{{/* Table Row */}}
+{{define "table-row"}}
+<tr class="hover:bg-slate-800/30 transition-colors {{.class}}">
+    {{.content}}
+</tr>
+{{end}}
+
+{{/* Table Cell */}}
+{{define "table-cell"}}
+<td class="px-4 py-3 text-sm text-slate-300 {{.class}}">
+    {{.content}}
+</td>
+{{end}}
+
+{{/* Sortable Table Header */}}
+{{define "table-header-sortable"}}
+<th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+    <button class="flex items-center gap-2 hover:text-emerald-500 transition-colors"
+            {{if .onclick}}onclick="{{.onclick}}"{{end}}
+            {{if .hxGet}}hx-get="{{.hxGet}}" hx-target="{{.hxTarget}}" hx-swap="{{.hxSwap}}"{{end}}>
+        <span>{{.label}}</span>
+        {{if .sortable}}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {{if eq .sortDir "asc"}}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            {{else if eq .sortDir "desc"}}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            {{else}}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+            {{end}}
+        </svg>
+        {{end}}
+    </button>
+</th>
+{{end}}
+
+{{/* Table with HTMX Pagination */}}
+{{define "table-paginated"}}
+<div class="{{.containerClass}}">
+    <div class="overflow-x-auto" id="{{if .id}}{{.id}}{{else}}data-table{{end}}">
+        <table class="w-full {{.class}}">
+            {{if .headers}}
+            <thead class="border-b border-slate-800">
+                <tr>
+                    {{range .headers}}
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        {{.label}}
+                    </th>
+                    {{end}}
+                </tr>
+            </thead>
+            {{end}}
+            <tbody class="divide-y divide-slate-800">
+                {{.content}}
+            </tbody>
+        </table>
+    </div>
+
+    {{if .pagination}}
+    <div class="flex items-center justify-between px-4 py-3 border-t border-slate-800">
+        <div class="text-sm text-slate-400">
+            Showing {{.pagination.start}} to {{.pagination.end}} of {{.pagination.total}} results
+        </div>
+        <div class="flex gap-2">
+            {{if gt .pagination.currentPage 1}}
+            <button hx-get="{{.pagination.endpoint}}?page={{sub .pagination.currentPage 1}}"
+                    hx-target="#{{if .id}}{{.id}}{{else}}data-table{{end}}"
+                    hx-swap="outerHTML"
+                    class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-sm text-slate-300 transition-colors">
+                Previous
+            </button>
+            {{end}}
+
+            <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded text-sm">
+                Page {{.pagination.currentPage}} of {{.pagination.totalPages}}
+            </span>
+
+            {{if lt .pagination.currentPage .pagination.totalPages}}
+            <button hx-get="{{.pagination.endpoint}}?page={{add .pagination.currentPage 1}}"
+                    hx-target="#{{if .id}}{{.id}}{{else}}data-table{{end}}"
+                    hx-swap="outerHTML"
+                    class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-sm text-slate-300 transition-colors">
+                Next
+            </button>
+            {{end}}
+        </div>
+    </div>
+    {{end}}
+</div>
+{{end}}
+
+{{/* Table with Alpine.js Client-Side Sorting/Filtering */}}
+{{define "table-alpine"}}
+<div x-data="{
+        items: {{.items}},
+        sortKey: '{{if .defaultSort}}{{.defaultSort}}{{end}}',
+        sortDir: 'asc',
+        search: '',
+        get filteredItems() {
+            let filtered = this.items;
+            if (this.search) {
+                filtered = filtered.filter(item =>
+                    Object.values(item).some(val =>
+                        String(val).toLowerCase().includes(this.search.toLowerCase())
+                    )
+                );
+            }
+            if (this.sortKey) {
+                filtered.sort((a, b) => {
+                    let aVal = a[this.sortKey];
+                    let bVal = b[this.sortKey];
+                    if (this.sortDir === 'asc') {
+                        return aVal > bVal ? 1 : -1;
+                    } else {
+                        return aVal < bVal ? 1 : -1;
+                    }
+                });
+            }
+            return filtered;
+        },
+        sortBy(key) {
+            if (this.sortKey === key) {
+                this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortKey = key;
+                this.sortDir = 'asc';
+            }
+        }
+     }"
+     class="{{.containerClass}}">
+
+    {{if .searchable}}
+    <div class="mb-4">
+        <input type="text"
+               x-model="search"
+               placeholder="Search..."
+               class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+    </div>
+    {{end}}
+
+    <div class="overflow-x-auto">
+        <table class="w-full {{.class}}">
+            <thead class="border-b border-slate-800">
+                <tr>
+                    {{range .columns}}
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        {{if .sortable}}
+                        <button @click="sortBy('{{.key}}')" class="flex items-center gap-2 hover:text-emerald-500">
+                            <span>{{.label}}</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                 x-show="sortKey === '{{.key}}'">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      :d="sortDir === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+                            </svg>
+                        </button>
+                        {{else}}
+                        {{.label}}
+                        {{end}}
+                    </th>
+                    {{end}}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+                <template x-for="item in filteredItems" :key="item.id">
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        {{range .columns}}
+                        <td class="px-4 py-3 text-sm text-slate-300" x-text="{{if .format}}{{.format}}{{else}}item.{{.key}}{{end}}"></td>
+                        {{end}}
+                    </tr>
+                </template>
+                <tr x-show="filteredItems.length === 0">
+                    <td colspan="{{len .columns}}" class="px-4 py-8 text-center text-slate-500">
+                        No results found
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}
+
+{{/* Empty State */}}
+{{define "table-empty"}}
+<tr>
+    <td colspan="{{.colspan}}" class="px-4 py-12 text-center">
+        <div class="flex flex-col items-center">
+            {{if .icon}}
+            <div class="text-slate-600 mb-4">
+                {{.icon}}
+            </div>
+            {{end}}
+            <p class="text-slate-400 mb-2">{{if .message}}{{.message}}{{else}}No data available{{end}}</p>
+            {{if .action}}
+            <button class="btn-primary mt-4" {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+                {{.action}}
+            </button>
+            {{end}}
+        </div>
+    </td>
+</tr>
+{{end}}
+
+{{/* Action Buttons Cell */}}
+{{define "table-actions"}}
+<td class="px-4 py-3 text-sm">
+    <div class="flex items-center gap-2">
+        {{.content}}
+    </div>
+</td>
+{{end}}
+
+{{/* Status Cell with Badge */}}
+{{define "table-status"}}
+<td class="px-4 py-3 text-sm">
+    {{template "badge-status" .}}
+</td>
+{{end}}

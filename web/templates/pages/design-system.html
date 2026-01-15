@@ -1,0 +1,124 @@
+{{define "content-design-system"}}
+
+<div class="max-w-7xl mx-auto">
+    <!-- Colors -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-white mb-4">Colors</h2>
+        <div class="grid grid-cols-4 gap-4">
+            <div class="glass-card p-4">
+                <div class="h-16 bg-slate-950 rounded mb-2"></div>
+                <p class="text-sm font-mono">bg-canvas</p>
+                <p class="text-xs text-slate-500">#020617</p>
+            </div>
+            <div class="glass-card p-4">
+                <div class="h-16 bg-slate-900 rounded mb-2"></div>
+                <p class="text-sm font-mono">bg-surface</p>
+                <p class="text-xs text-slate-500">#0f172a</p>
+            </div>
+            <div class="glass-card p-4">
+                <div class="h-16 bg-emerald-500 rounded mb-2"></div>
+                <p class="text-sm font-mono">emerald-500</p>
+                <p class="text-xs text-slate-500">Primary</p>
+            </div>
+            <div class="glass-card p-4">
+                <div class="h-16 bg-rose-500 rounded mb-2"></div>
+                <p class="text-sm font-mono">rose-500</p>
+                <p class="text-xs text-slate-500">Destructive</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Buttons -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-white mb-4">Buttons</h2>
+        <div class="glass-card p-6 space-x-4">
+            <button class="btn-primary">Primary Button</button>
+            <button class="btn-destructive">Destructive Button</button>
+            <button class="btn-ghost">Ghost Button</button>
+        </div>
+    </section>
+
+    <!-- Badges -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-white mb-4">Badges</h2>
+        <div class="glass-card p-6 space-x-4">
+            <span class="badge-online">Online</span>
+            <span class="badge-error">Error</span>
+            <span class="badge-warning">Warning</span>
+            <span class="badge-info">Info</span>
+        </div>
+    </section>
+
+    <!-- Matrix Terminal -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-white mb-4">Matrix Terminal</h2>
+        <div class="terminal">
+            <div class="terminal-header">
+                <span class="terminal-dot bg-rose-500 mr-1"></span>
+                <span class="terminal-dot bg-amber-500 mr-1"></span>
+                <span class="terminal-dot bg-emerald-500 mr-4"></span>
+                <span class="text-slate-500 text-xs">root@cloudboot-core: ~</span>
+            </div>
+            <div class="p-4 space-y-1">
+                <div class="text-slate-400">&gt; Initializing hardware probe...</div>
+                <div class="text-slate-400">&gt; Found RAID Controller: LSI 3108</div>
+                <div class="text-emerald-500">&gt; [RAID] Config Success ✓</div>
+                <div class="text-slate-400">&gt; Waiting for next command...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form Inputs -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-white mb-4">Form Inputs</h2>
+        <div class="glass-card p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Hostname</label>
+                <input type="text"
+                       value="server-001"
+                       class="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">MAC Address</label>
+                <input type="text"
+                       value="aa:bb:cc:dd:ee:ff"
+                       class="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white font-mono placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors">
+            </div>
+        </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-white mb-4">Cards</h2>
+        <div class="grid grid-cols-3 gap-6">
+            <div class="glass-card">
+                <h3 class="text-lg font-semibold text-white mb-2">Basic Card</h3>
+                <p class="text-slate-400">This is a basic glass card with backdrop blur effect.</p>
+            </div>
+            <div class="glass-card">
+                <h3 class="text-lg font-semibold text-white mb-3">Machine Status</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">CPU:</span>
+                        <span class="text-white">32 Cores</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Memory:</span>
+                        <span class="text-white">128GB</span>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <h3 class="text-lg font-semibold text-white mb-3">Provider Info</h3>
+                <span class="badge-info mb-2">RAID Controller</span>
+                <p class="text-slate-400 text-sm">LSI MegaRAID 3108</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+{{end}}
+
+{{define "content"}}
+{{template "content-design-system" .}}
+{{end}}

@@ -1,0 +1,387 @@
+{{define "design_system.html"}}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - CloudBoot NG</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <link href="/static/css/output.css" rel="stylesheet">
+
+    <!-- HTMX -->
+    <script src="/static/js/htmx.min.js"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="/static/js/alpine.min.js"></script>
+
+    <style>
+        .scrollbar-thin {
+            scrollbar-width: thin;
+            scrollbar-color: #475569 transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #475569;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen">
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0">
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                    </svg>
+                </div>
+                <span class="text-lg font-semibold text-white">CloudBoot</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#colors" class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                Colors
+            </a>
+            <a href="#typography" class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path></svg>
+                Typography
+            </a>
+            <a href="#buttons" class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                Buttons
+            </a>
+            <a href="#badges" class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                Badges
+            </a>
+            <a href="#cards" class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"></path></svg>
+                Cards
+            </a>
+            <a href="#terminal" class="flex items-center px-3 py-2 rounded-lg text-emerald-500 bg-emerald-500/10 border border-emerald-500/20">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                Terminal
+            </a>
+            <a href="#forms" class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Forms
+            </a>
+        </nav>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-slate-800">
+            <p class="text-xs text-slate-500 font-mono">v{{.Version}}</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+        <!-- Header -->
+        <header class="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+            <div class="max-w-7xl mx-auto px-8 py-4">
+                <h1 class="text-2xl font-bold text-white">Design System</h1>
+                <p class="text-sm text-slate-400 mt-1">CloudBoot NG UI Component Library - Dark Industrial Theme</p>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto px-8 py-8 space-y-16">
+
+            <!-- Colors Section -->
+            <section id="colors">
+                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-gradient-to-r from-emerald-500 to-violet-500 mr-3"></span>
+                    Color Palette
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-slate-950 border border-slate-800"></div>
+                        <p class="text-sm font-medium">Canvas</p>
+                        <p class="text-xs text-slate-500 font-mono">bg-slate-950 #020617</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-slate-900 border border-slate-800"></div>
+                        <p class="text-sm font-medium">Surface</p>
+                        <p class="text-xs text-slate-500 font-mono">bg-slate-900 #0f172a</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-emerald-500"></div>
+                        <p class="text-sm font-medium">Primary</p>
+                        <p class="text-xs text-slate-500 font-mono">emerald-500 #10b981</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-violet-500"></div>
+                        <p class="text-sm font-medium">Accent (AI)</p>
+                        <p class="text-xs text-slate-500 font-mono">violet-500 #8b5cf6</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-rose-500"></div>
+                        <p class="text-sm font-medium">Destructive</p>
+                        <p class="text-xs text-slate-500 font-mono">rose-500 #f43f5e</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-amber-500"></div>
+                        <p class="text-sm font-medium">Warning</p>
+                        <p class="text-xs text-slate-500 font-mono">amber-500 #f59e0b</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-slate-200"></div>
+                        <p class="text-sm font-medium">Text Main</p>
+                        <p class="text-xs text-slate-500 font-mono">text-slate-200 #e2e8f0</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-20 rounded-lg bg-slate-400"></div>
+                        <p class="text-sm font-medium">Text Muted</p>
+                        <p class="text-xs text-slate-500 font-mono">text-slate-400 #94a3b8</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Typography Section -->
+            <section id="typography">
+                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center mr-3 text-sm font-mono">Aa</span>
+                    Typography
+                </h2>
+                <div class="bg-slate-900/50 rounded-lg border border-slate-800 p-6 space-y-6">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-2">UI Font (Inter)</p>
+                        <p class="text-4xl font-bold text-white">CloudBoot NG</p>
+                        <p class="text-xl text-slate-300 mt-2">Reconstruct Infrastructure Order with Code</p>
+                        <p class="text-sm text-slate-400 mt-2">Used for headings, labels, and body text throughout the interface.</p>
+                    </div>
+                    <div class="border-t border-slate-800 pt-6">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-2">Data Font (JetBrains Mono)</p>
+                        <p class="text-xl font-mono text-emerald-500">192.168.1.100</p>
+                        <p class="text-lg font-mono text-slate-300 mt-2">AA:BB:CC:DD:EE:FF</p>
+                        <p class="text-base font-mono text-slate-400 mt-2">uuid: 550e8400-e29b-41d4-a716-446655440000</p>
+                        <p class="text-sm font-mono text-slate-500 mt-2">version: v3.0.0-beta.1</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Buttons Section -->
+            <section id="buttons">
+                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-600 mr-3"></span>
+                    Buttons
+                </h2>
+                <div class="bg-slate-900/50 rounded-lg border border-slate-800 p-6">
+                    <div class="flex flex-wrap gap-4">
+                        <!-- Primary -->
+                        <button class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-md shadow-lg shadow-emerald-900/20 transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Primary Action
+                        </button>
+
+                        <!-- Secondary -->
+                        <button class="inline-flex items-center justify-center px-4 py-2 bg-transparent border border-slate-600 hover:border-slate-500 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded-md transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-slate-500/50">
+                            Secondary
+                        </button>
+
+                        <!-- Danger -->
+                        <button class="inline-flex items-center justify-center px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium rounded-md shadow-lg shadow-rose-900/20 transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-rose-500/50">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Delete
+                        </button>
+
+                        <!-- AI/Magic -->
+                        <button class="inline-flex items-center justify-center px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-md shadow-lg shadow-violet-900/20 transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            AI Suggest
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Badges Section -->
+            <section id="badges">
+                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 mr-3"></span>
+                    Status Badges
+                </h2>
+                <div class="bg-slate-900/50 rounded-lg border border-slate-800 p-6">
+                    <div class="flex flex-wrap gap-4">
+                        <!-- Online -->
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span class="relative flex h-2 w-2 mr-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            Online
+                        </span>
+
+                        <!-- Offline -->
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                            <span class="relative flex h-2 w-2 mr-2">
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                            </span>
+                            Offline
+                        </span>
+
+                        <!-- Installing -->
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <span class="relative flex h-2 w-2 mr-2">
+                                <span class="animate-pulse relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                            Installing
+                        </span>
+
+                        <!-- Error -->
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            <span class="relative flex h-2 w-2 mr-2">
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                            </span>
+                            Error
+                        </span>
+
+                        <!-- Discovered -->
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                            <span class="relative flex h-2 w-2 mr-2">
+                                <span class="animate-bounce relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+                            </span>
+                            Discovered
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cards Section -->
+            <section id="cards">
+                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 mr-3"></span>
+                    Cards
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Stat Card -->
+                    <div class="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-lg p-6 shadow-sm hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-400">Total Machines</p>
+                                <p class="text-3xl font-bold text-white mt-1 font-mono">1,284</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glass Card -->
+                    <div class="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-lg p-6 shadow-sm hover:border-slate-700 transition-colors">
+                        <h3 class="text-lg font-medium text-white mb-2">Glass Card</h3>
+                        <p class="text-slate-400 text-sm">This card uses a subtle glass morphism effect with backdrop blur and semi-transparent background.</p>
+                    </div>
+
+                    <!-- Interactive Card -->
+                    <div class="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-lg p-6 shadow-sm hover:border-violet-500/30 hover:shadow-[0_0_20px_rgba(139,92,246,0.1)] transition-all duration-300 cursor-pointer">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-medium text-white">AI Suggestion</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-500/20 text-violet-400">NEW</span>
+                        </div>
+                        <p class="text-slate-400 text-sm">Hover to see the violet glow effect used for AI-powered features.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Terminal Section -->
+            <section id="terminal">
+                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-black border border-slate-800 flex items-center justify-center mr-3">
+                        <span class="text-emerald-500 text-xs font-mono">&gt;_</span>
+                    </span>
+                    Terminal (The Matrix View)
+                </h2>
+                <div class="w-full bg-black rounded-lg border border-slate-800 overflow-hidden font-mono text-sm shadow-inner">
+                    <!-- Header with macOS-style dots -->
+                    <div class="flex items-center px-4 py-2 bg-slate-900 border-b border-slate-800">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-rose-500/20 hover:bg-rose-500 transition-colors cursor-pointer"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-500/20 hover:bg-amber-500 transition-colors cursor-pointer"></div>
+                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        </div>
+                        <div class="ml-4 text-xs text-slate-500">root@cloudboot-core: ~ / job-8848</div>
+                    </div>
+                    <!-- Log Stream Area -->
+                    <div id="log-container" class="p-4 h-64 overflow-y-auto scrollbar-thin">
+                        <div class="text-emerald-500/90">> Initializing hardware probe...</div>
+                        <div class="text-slate-300">> [KERNEL] Linux version 5.10.0-60.18.0.50.oe2203...</div>
+                        <div class="text-slate-300">> [AGENT] Downloading provider-huawei-raid... 100%</div>
+                        <div class="text-slate-300">> [RAID] Scanning controller: LSI MegaRAID SAS 3108</div>
+                        <div class="text-slate-300">> [RAID] Found 4 physical drives: sda, sdb, sdc, sdd</div>
+                        <div class="text-amber-500">> [WARN] Battery backup low, using WriteThrough cache policy</div>
+                        <div class="text-slate-300">> [RAID] Creating Virtual Drive 0 (RAID 10)...</div>
+                        <div class="text-slate-300">> [RAID] Initialization in progress: 25%</div>
+                        <div class="text-slate-300">> [RAID] Initialization in progress: 50%</div>
+                        <div class="text-slate-300">> [RAID] Initialization in progress: 75%</div>
+                        <div class="text-emerald-500">> [SUCCESS] Virtual Drive 0 created successfully</div>
+                        <div class="text-emerald-500">> [SUCCESS] RAID configuration completed</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Forms Section -->
+            <section id="forms">
+                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 mr-3 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </span>
+                    Form Elements
+                </h2>
+                <div class="bg-slate-900/50 rounded-lg border border-slate-800 p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Text Input -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">Hostname</label>
+                            <input type="text" value="server-001.dc1.cloudboot.local" class="block w-full bg-slate-950 border border-slate-700 rounded-md py-2 px-3 text-slate-200 font-mono placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 sm:text-sm transition-colors">
+                        </div>
+
+                        <!-- IP Address Input -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">IP Address</label>
+                            <input type="text" value="192.168.1.100" class="block w-full bg-slate-950 border border-slate-700 rounded-md py-2 px-3 text-slate-200 font-mono placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 sm:text-sm transition-colors">
+                        </div>
+
+                        <!-- Select -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">RAID Level</label>
+                            <select class="block w-full bg-slate-950 border border-slate-700 rounded-md py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 sm:text-sm transition-colors">
+                                <option>RAID 0 (Stripe)</option>
+                                <option>RAID 1 (Mirror)</option>
+                                <option>RAID 5 (Parity)</option>
+                                <option selected>RAID 10 (Stripe + Mirror)</option>
+                            </select>
+                        </div>
+
+                        <!-- Checkbox -->
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="force-init" checked class="h-4 w-4 rounded border-slate-600 bg-slate-950 text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0">
+                            <label for="force-init" class="text-sm text-slate-300">Force initialization</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
+{{end}}
