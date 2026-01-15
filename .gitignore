@@ -52,3 +52,17 @@ tmp/
 # Tailwind CLI binary
 tailwindcss
 tailwindcss-*
+
+# Binary files
+cloudboot-ng
+cloudboot-ng.exe
+cb-agent
+cb-agent.exe
+provider-mock
+provider-mock.exe
+
+# Build artifacts
+build/
+dist/
+*.tar.gz
+*.zip
