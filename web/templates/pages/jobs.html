@@ -1,137 +1,289 @@
-{{define "content-jobs"}}
+{{define "content"}}
 <div class="max-w-7xl mx-auto">
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-5 gap-4 mb-6">
-        <div class="glass-card hover:border-emerald-500/30 transition-all">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">装机任务</h1>
+            <p class="text-slate-400 mt-1">监控和管理服务器配置任务</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="document.getElementById('new-job-modal').classList.remove('hidden')"
+                class="btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                新建任务
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <div class="glass-card">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-slate-400 mb-1">Total Jobs</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.TotalJobs}}</p>
-                </div>
-                <div class="text-4xl text-slate-400">📋</div>
+                <span class="text-slate-400 text-sm">总任务</span>
+                <span class="text-2xl font-bold text-white">{{.stats.TotalJobs}}</span>
             </div>
         </div>
-
         <div class="glass-card hover:border-amber-500/30 transition-all">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-slate-400 mb-1">Pending</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.PendingJobs}}</p>
-                </div>
-                <div class="text-4xl text-amber-500">⏳</div>
+                <span class="text-slate-400 text-sm">等待中</span>
+                <span class="text-2xl font-bold text-amber-500">{{.stats.PendingJobs}}</span>
             </div>
         </div>
-
-        <div class="glass-card hover:border-blue-500/30 transition-all">
+        <div class="glass-card hover:border-violet-500/30 transition-all">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-slate-400 mb-1">Running</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.RunningJobs}}</p>
-                </div>
-                <div class="text-4xl text-blue-500">⚙️</div>
+                <span class="text-slate-400 text-sm">运行中</span>
+                <span class="text-2xl font-bold text-violet-500">{{.stats.RunningJobs}}</span>
             </div>
         </div>
-
         <div class="glass-card hover:border-emerald-500/30 transition-all">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-slate-400 mb-1">Completed</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.CompletedJobs}}</p>
-                </div>
-                <div class="text-4xl text-emerald-500">✅</div>
+                <span class="text-slate-400 text-sm">已完成</span>
+                <span class="text-2xl font-bold text-emerald-500">{{.stats.CompletedJobs}}</span>
             </div>
         </div>
-
         <div class="glass-card hover:border-rose-500/30 transition-all">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-slate-400 mb-1">Failed</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.FailedJobs}}</p>
-                </div>
-                <div class="text-4xl text-rose-500">❌</div>
+                <span class="text-slate-400 text-sm">失败</span>
+                <span class="text-2xl font-bold text-rose-500">{{.stats.FailedJobs}}</span>
             </div>
         </div>
     </div>
 
-    <!-- Jobs Table -->
-    <div class="glass-card">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-semibold text-white">Provisioning Jobs</h2>
-            <div class="flex gap-2">
-                <button class="btn-ghost">Filter</button>
-                <button class="btn-ghost">Refresh</button>
-            </div>
+    <!-- Tabs -->
+    <div x-data="{ tab: 'all' }" class="mb-6">
+        <div class="flex space-x-1 bg-slate-900/50 backdrop-blur border border-slate-800 rounded-xl p-1 w-fit">
+            <button @click="tab = 'all'" :class="tab === 'all' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                全部
+            </button>
+            <button @click="tab = 'running'" :class="tab === 'running' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                运行中
+            </button>
+            <button @click="tab = 'completed'" :class="tab === 'completed' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                已完成
+            </button>
+            <button @click="tab = 'failed'" :class="tab === 'failed' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                失败
+            </button>
         </div>
+    </div>
 
-        {{if .jobs}}
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-800">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Job ID</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Machine</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Type</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Status</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Current Step</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Created</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .jobs}}
-                    <tr class="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
-                        <td class="py-3 px-4">
-                            <a href="/jobs/{{.ID}}/logs" class="text-emerald-400 hover:text-emerald-300 font-mono text-sm">
-                                {{printf "%.8s" .ID}}
-                            </a>
-                        </td>
-                        <td class="py-3 px-4">
+    <!-- Jobs List -->
+    {{if .jobs}}
+    <div class="space-y-4">
+        {{range .jobs}}
+        <div class="glass-card overflow-hidden">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center
+                        {{if eq .Status "running"}}bg-violet-500/10{{else if eq .Status "success"}}bg-emerald-500/10{{else if eq .Status "failed"}}bg-rose-500/10{{else}}bg-slate-800{{end}}">
+                        {{if eq .Status "running"}}
+                        <svg class="w-6 h-6 text-violet-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        {{else if eq .Status "success"}}
+                        <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        {{else if eq .Status "failed"}}
+                        <svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        {{else}}
+                        <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{end}}
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">
+                            {{if eq .Type "audit"}}硬件审计
+                            {{else if eq .Type "config_raid"}}RAID 配置
+                            {{else if eq .Type "install_os"}}操作系统安装
+                            {{else}}{{.Type}}
+                            {{end}}
+                        </h3>
+                        <p class="text-sm text-slate-400">机器: 
                             {{if .Machine}}
-                            <span class="font-mono text-sm text-slate-300">{{.Machine.Hostname}}</span>
+                            <span class="font-mono">{{.Machine.Hostname}}</span>
                             {{else}}
-                            <span class="text-slate-500 text-sm">-</span>
+                            <span class="font-mono">{{printf "%.8s" .MachineID}}</span>
                             {{end}}
-                        </td>
-                        <td class="py-3 px-4">
-                            <span class="badge badge-info">{{.Type}}</span>
-                        </td>
-                        <td class="py-3 px-4">
-                            {{if eq .Status "pending"}}
-                            <span class="badge badge-warning">Pending</span>
-                            {{else if eq .Status "running"}}
-                            <span class="badge badge-online">
-                                <span class="dot-pulse mr-2"></span>
-                                Running
-                            </span>
-                            {{else if eq .Status "success"}}
-                            <span class="badge badge-online">Success</span>
-                            {{else if eq .Status "failed"}}
-                            <span class="badge badge-error">Failed</span>
-                            {{else}}
-                            <span class="badge">{{.Status}}</span>
-                            {{end}}
-                        </td>
-                        <td class="py-3 px-4 text-sm text-slate-400">{{.StepCurrent}}</td>
-                        <td class="py-3 px-4 text-sm text-slate-400">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
-                        <td class="py-3 px-4">
-                            <a href="/jobs/{{.ID}}/logs" class="btn-ghost text-sm py-1 px-3">View Logs</a>
-                        </td>
-                    </tr>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    {{if eq .Status "running"}}
+                    <span class="badge badge-discovered">
+                        <span class="w-2 h-2 bg-violet-500 rounded-full mr-2 animate-pulse"></span>
+                        运行中
+                    </span>
+                    {{else if eq .Status "success"}}
+                    <span class="badge badge-success">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
+                        成功
+                    </span>
+                    {{else if eq .Status "failed"}}
+                    <span class="badge badge-error">
+                        <span class="w-2 h-2 bg-rose-500 rounded-full mr-2"></span>
+                        失败
+                    </span>
+                    {{else}}
+                    <span class="badge badge-warning">
+                        <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
+                        等待中
+                    </span>
                     {{end}}
-                </tbody>
-            </table>
-        </div>
-        {{else}}
-        <div class="text-center py-12">
-            <div class="text-6xl mb-4">📋</div>
-            <p class="text-slate-400 mb-2">No jobs yet</p>
-            <p class="text-sm text-slate-500">Provision a machine to create jobs</p>
+                    <span class="text-sm font-mono text-slate-500">{{printf "%.8s" .ID}}</span>
+                </div>
+            </div>
+
+            <!-- Pipeline Steps -->
+            <div class="mb-4">
+                <div class="flex items-center space-x-2 overflow-x-auto pb-2">
+                    {{$currentStep := .StepCurrent}}
+                    {{$status := .Status}}
+                    {{range $i, $step := $.pipelineSteps}}
+                    <div class="flex items-center">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
+                                {{if eq $step $currentStep}}bg-violet-500 text-white ring-4 ring-violet-500/20
+                                {{else if eq $status "success"}}bg-emerald-500 text-white
+                                {{else}}bg-slate-800 text-slate-500{{end}}">
+                                {{if eq $status "success"}}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                {{else}}
+                                {{add $i 1}}
+                                {{end}}
+                            </div>
+                            <span class="text-xs text-slate-500 mt-1 whitespace-nowrap">{{$step}}</span>
+                        </div>
+                        {{if lt $i (sub (len $.pipelineSteps) 1)}}
+                        <div class="w-8 h-0.5 mx-1 {{if eq $status "success"}}bg-emerald-500{{else}}bg-slate-700{{end}}"></div>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            {{if eq .Status "running"}}
+            <div class="mb-4">
+                <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-400">进度</span>
+                    <span class="text-white font-medium">{{.Progress}}%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2">
+                    <div class="bg-violet-500 h-2 rounded-full transition-all duration-500" style="width: {{.Progress}}%"></div>
+                </div>
+            </div>
+            {{end}}
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                <div class="text-sm text-slate-500">
+                    创建时间: <span class="font-mono text-slate-400">{{.CreatedAt.Format "2006-01-02 15:04:05"}}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <a href="/jobs/{{.ID}}/logs" class="btn-ghost text-sm py-1.5">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        查看日志
+                    </a>
+                    {{if eq .Status "running"}}
+                    <button class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg text-sm text-rose-500 transition-colors flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        取消
+                    </button>
+                    {{else if eq .Status "failed"}}
+                    <button class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg text-sm text-amber-500 transition-colors flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        重试
+                    </button>
+                    {{end}}
+                </div>
+            </div>
         </div>
         {{end}}
     </div>
+    {{else}}
+    <div class="glass-card text-center py-16">
+        <svg class="w-16 h-16 mx-auto text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-slate-400 mb-2">暂无任务</h3>
+        <p class="text-slate-500 mb-4">选择一台机器并运行配置任务</p>
+        <button onclick="document.getElementById('new-job-modal').classList.remove('hidden')"
+            class="btn-primary">
+            新建任务
+        </button>
+    </div>
+    {{end}}
 </div>
-{{end}}
 
-{{define "content"}}
-{{template "content-jobs" .}}
+<!-- New Job Modal -->
+<div id="new-job-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="document.getElementById('new-job-modal').classList.add('hidden')"></div>
+        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">新建任务</h3>
+                <button onclick="document.getElementById('new-job-modal').classList.add('hidden')" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form hx-post="/api/v1/jobs" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">任务类型</label>
+                    <select name="type" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="audit">硬件审计</option>
+                        <option value="config_raid">RAID 配置</option>
+                        <option value="install_os">操作系统安装</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">目标机器</label>
+                    <select name="machine_id" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="">-- 选择机器 --</option>
+                        {{range .availableMachines}}
+                        <option value="{{.ID}}">{{.Hostname}} ({{.IPAddress}})</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">OS 配置文件</label>
+                    <select name="profile_id" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="">-- 选择配置文件 --</option>
+                        {{range .profiles}}
+                        <option value="{{.ID}}">{{.Name}} ({{.Distro}})</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="document.getElementById('new-job-modal').classList.add('hidden')"
+                        class="btn-secondary">
+                        取消
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        创建任务
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {{end}}

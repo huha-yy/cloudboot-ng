@@ -1,316 +1,59 @@
 {{define "base.html"}}
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if .title}}{{.title}} - {{end}}CloudBoot NG</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: {
-                            950: '#020617',
-                        }
-                    },
-                    fontFamily: {
-                        mono: ['JetBrains Mono', 'Monaco', 'Courier New', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link href="/static/css/output.css" rel="stylesheet">
 
     <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="/static/js/htmx.min.js"></script>
 
     <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
-
-    <!-- Custom Styles -->
-    <style>
-        /* Glass Morphism Effect */
-        .glass-card {
-            @apply bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-lg p-6 shadow-sm;
-        }
-
-        /* Button Styles */
-        .btn-primary {
-            @apply inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-md shadow-lg shadow-emerald-900/20 transition-all duration-200 active:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed;
-        }
-
-        .btn-secondary {
-            @apply px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-        }
-
-        .btn-ghost {
-            @apply px-4 py-2 bg-transparent hover:bg-slate-800 text-slate-300 hover:text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-        }
-
-        .btn-destructive {
-            @apply px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-        }
-
-        /* Badge Styles */
-        .badge {
-            @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-        }
-
-        .badge-online {
-            @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
-        }
-
-        .badge-offline {
-            @apply badge bg-slate-500/20 text-slate-400 border border-slate-500/30;
-        }
-
-        .badge-success {
-            @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
-        }
-
-        .badge-error {
-            @apply badge bg-rose-500/20 text-rose-400 border border-rose-500/30;
-        }
-
-        .badge-warning {
-            @apply badge bg-amber-500/20 text-amber-400 border border-amber-500/30;
-        }
-
-        .badge-info {
-            @apply badge bg-blue-500/20 text-blue-400 border border-blue-500/30;
-        }
-
-        /* Sidebar Navigation Active State */
-        .nav-link {
-            @apply flex items-center px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all duration-200 relative;
-        }
-
-        .nav-link-active {
-            @apply text-emerald-400 bg-emerald-500/10;
-        }
-
-        .nav-link-active::before {
-            content: '';
-            @apply absolute left-0 top-0 bottom-0 w-0.5 bg-emerald-500;
-        }
-
-        /* Terminal Styles */
-        .terminal {
-            @apply bg-black rounded-lg border border-slate-800 overflow-hidden font-mono text-sm shadow-inner;
-        }
-
-        .terminal-header {
-            @apply flex items-center px-4 py-2 bg-slate-900 border-b border-slate-800;
-        }
-
-        .terminal-dot {
-            @apply w-3 h-3 rounded-full;
-        }
-
-        /* HTMX Loading Indicator */
-        .htmx-indicator {
-            @apply hidden;
-        }
-
-        .htmx-request .htmx-indicator {
-            @apply inline-block;
-        }
-
-        /* Scrollbar Styles */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            @apply bg-slate-900;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            @apply bg-slate-700 rounded-full;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            @apply bg-slate-600;
-        }
-
-        /* Smooth transitions */
-        * {
-            @apply transition-colors duration-150;
-        }
-    </style>
-
-    {{if .customCSS}}
-    {{.customCSS}}
-    {{end}}
+    <script defer src="/static/js/alpine.min.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen">
-    <div class="flex h-screen" x-data="{ sidebarOpen: true }">
+<body class="h-full bg-slate-950 text-slate-200 font-sans antialiased">
+    <div class="flex h-full">
+        {{template "sidebar" .}}
 
-        <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'w-64' : 'w-16'"
-               class="bg-slate-950 border-r border-slate-800 flex-shrink-0 transition-all duration-300 overflow-hidden">
-
-            <!-- Logo -->
-            <div class="h-16 flex items-center justify-between px-4 border-b border-slate-800">
-                <a href="/" class="flex items-center gap-3 min-w-0">
-                    <div class="text-2xl flex-shrink-0">☁️</div>
-                    <span x-show="sidebarOpen"
-                          x-transition:enter="transition ease-out duration-200"
-                          x-transition:enter-start="opacity-0"
-                          x-transition:enter-end="opacity-100"
-                          class="text-lg font-bold text-white truncate">CloudBoot NG</span>
-                </a>
-                <button @click="sidebarOpen = !sidebarOpen"
-                        class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 flex-shrink-0"
-                        :class="!sidebarOpen && 'mx-auto'">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              :d="sidebarOpen ? 'M11 19l-7-7 7-7m8 14l-7-7 7-7' : 'M13 5l7 7-7 7M5 5l7 7-7 7'"/>
+        <main class="flex-1 overflow-y-auto">
+            <!-- Flash Messages -->
+            {{if .successMessage}}
+            <div class="m-6 mb-0 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-4">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-emerald-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                     </svg>
-                </button>
-            </div>
-
-            <!-- Navigation Links -->
-            <nav class="mt-6 px-2 space-y-1">
-                <a href="/"
-                   class="nav-link {{if eq .active "dashboard"}}nav-link-active{{end}}"
-                   :title="!sidebarOpen && 'Dashboard'">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>
-                    <span x-show="sidebarOpen" class="ml-3">Dashboard</span>
-                </a>
-
-                <a href="/machines"
-                   class="nav-link {{if eq .active "machines"}}nav-link-active{{end}}"
-                   :title="!sidebarOpen && 'Physical Machines'">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
-                    </svg>
-                    <span x-show="sidebarOpen" class="ml-3">Physical Machines</span>
-                </a>
-
-                <a href="/jobs"
-                   class="nav-link {{if eq .active "jobs"}}nav-link-active{{end}}"
-                   :title="!sidebarOpen && 'Provisioning Jobs'">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                    </svg>
-                    <span x-show="sidebarOpen" class="ml-3">Provisioning Jobs</span>
-                </a>
-
-                <a href="/os-designer"
-                   class="nav-link {{if eq .active "os-designer"}}nav-link-active{{end}}"
-                   :title="!sidebarOpen && 'OS Designer'">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                    </svg>
-                    <span x-show="sidebarOpen" class="ml-3">OS Designer</span>
-                </a>
-
-                <a href="/store"
-                   class="nav-link {{if eq .active "store"}}nav-link-active{{end}}"
-                   :title="!sidebarOpen && 'Provider Store'">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                    <span x-show="sidebarOpen" class="ml-3">Provider Store</span>
-                </a>
-            </nav>
-
-            <!-- Bottom Actions -->
-            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800">
-                <a href="/design-system"
-                   class="nav-link {{if eq .active "design-system"}}nav-link-active{{end}}"
-                   :title="!sidebarOpen && 'Design System'">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-                    </svg>
-                    <span x-show="sidebarOpen" class="ml-3 text-xs">Design System</span>
-                </a>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-            <!-- Topbar -->
-            <header class="h-16 bg-slate-900/30 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 flex-shrink-0">
-                <div class="h-full px-6 flex items-center justify-between">
-                    <div>
-                        {{if .pageHeader}}
-                        <h1 class="text-xl font-semibold text-white">{{.pageHeader}}</h1>
-                        {{if .pageDescription}}
-                        <p class="text-sm text-slate-400">{{.pageDescription}}</p>
-                        {{end}}
-                        {{end}}
-                    </div>
-
-                    <div class="flex items-center gap-4">
-                        <!-- API Health Indicator -->
-                        <a href="/api/v1/health" class="flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors">
-                            <span class="relative flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                            </span>
-                            <span class="hidden lg:inline">API Online</span>
-                        </a>
-                    </div>
+                    <p class="ml-3 text-sm text-emerald-400">{{.successMessage}}</p>
                 </div>
-            </header>
+            </div>
+            {{end}}
+
+            {{if .errorMessage}}
+            <div class="m-6 mb-0 rounded-lg bg-rose-500/10 border border-rose-500/30 p-4">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-rose-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <p class="ml-3 text-sm text-rose-400">{{.errorMessage}}</p>
+                </div>
+            </div>
+            {{end}}
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-6">
-
-                <!-- Flash Messages -->
-                {{if .successMessage}}
-                <div class="mb-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-4">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 text-emerald-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <p class="ml-3 text-sm text-emerald-400">{{.successMessage}}</p>
-                    </div>
-                </div>
-                {{end}}
-
-                {{if .errorMessage}}
-                <div class="mb-6 rounded-lg bg-rose-500/10 border border-rose-500/30 p-4">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 text-rose-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                        </svg>
-                        <p class="ml-3 text-sm text-rose-400">{{.errorMessage}}</p>
-                    </div>
-                </div>
-                {{end}}
-
-                <!-- Content Slot -->
+            <div class="p-6">
                 {{template "content" .}}
-            </main>
-
-            <!-- Footer -->
-            <footer class="border-t border-slate-800 py-4 px-6 flex-shrink-0">
-                <div class="flex items-center justify-between text-xs text-slate-500">
-                    <p>CloudBoot NG v4.0.0 - The Terraform for Bare Metal</p>
-                    <a href="https://github.com/cloudboot/cloudboot-ng" target="_blank"
-                       class="hover:text-emerald-500 transition-colors">
-                        GitHub →
-                    </a>
-                </div>
-            </footer>
-        </div>
+            </div>
+        </main>
     </div>
-
-    {{if .customJS}}
-    {{.customJS}}
-    {{end}}
 </body>
 </html>
 {{end}}

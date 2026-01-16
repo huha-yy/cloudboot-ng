@@ -1,0 +1,28 @@
+[Unit]
+Description=CloudBoot BootOS Agent
+After=network-online.target
+Wants=network-online.target
+Documentation=https://cloudboot.co/docs
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cloudboot-init.sh
+Restart=always
+RestartSec=10s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cloudboot-agent
+
+# 安全限制
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/cloudboot/runtime
+
+# 资源限制
+MemoryLimit=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

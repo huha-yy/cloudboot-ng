@@ -1,0 +1,289 @@
+{{define "content"}}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">系统设置</h1>
+            <p class="text-slate-400 mt-1">配置 CloudBoot NG 系统参数与全局选项</p>
+        </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div x-data="{ activeTab: 'general' }">
+        <!-- Settings Navigation -->
+        <div class="glass-card mb-6">
+            <div class="flex space-x-1 p-1 bg-slate-800/50 rounded-lg">
+                <button @click="activeTab = 'general'" x-bind:class="activeTab === 'general' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    常规设置
+                </button>
+                <button @click="activeTab = 'network'" x-bind:class="activeTab === 'network' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    网络配置
+                </button>
+                <button @click="activeTab = 'storage'" x-bind:class="activeTab === 'storage' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    存储设置
+                </button>
+                <button @click="activeTab = 'security'" x-bind:class="activeTab === 'security' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    安全设置
+                </button>
+            </div>
+        </div>
+        <!-- General Settings -->
+        <div x-show="activeTab === 'general'">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">系统信息</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">系统名称</label>
+                            <input type="text" value="CloudBoot NG" class="input">
+                            <p class="text-xs text-slate-500 mt-1">显示在页面标题和侧边栏的系统名称</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">版本</label>
+                            <div class="flex items-center">
+                                <span class="font-mono text-sm text-slate-300 bg-slate-800 px-3 py-2 rounded-lg">1.0.0-alpha</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">当前系统版本，不可修改</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">日志设置</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用调试日志</p>
+                                <p class="text-xs text-slate-500">记录更详细的系统操作日志</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">日志保留天数</label>
+                            <select class="input">
+                                <option>7天</option>
+                                <option selected>30天</option>
+                                <option>90天</option>
+                                <option>180天</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">界面设置</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">默认语言</label>
+                            <select class="input">
+                                <option selected>简体中文</option>
+                                <option>English</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">时区设置</label>
+                            <select class="input">
+                                <option selected>Asia/Shanghai (UTC+8)</option>
+                                <option>America/New_York (UTC-5)</option>
+                                <option>Europe/London (UTC+0)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Network Settings -->
+        <div x-show="activeTab === 'network'">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">网络配置</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">服务器IP地址</label>
+                            <input type="text" value="192.168.1.100" class="input font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">监听端口</label>
+                            <input type="number" value="8080" class="input">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">TFTP根目录</label>
+                            <input type="text" value="/var/lib/tftpboot" class="input font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">DHCP服务器地址</label>
+                            <input type="text" value="192.168.1.1" class="input font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">PXE设置</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用PXE引导</p>
+                                <p class="text-xs text-slate-500">允许新机器通过网络启动</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">默认引导文件</label>
+                            <input type="text" value="pxelinux.0" class="input font-mono">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Storage Settings -->
+        <div x-show="activeTab === 'storage'">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">存储配置</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">数据库路径</label>
+                            <input type="text" value="cloudboot.db" class="input font-mono">
+                            <p class="text-xs text-slate-500 mt-1">SQLite数据库文件路径</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">镜像存储目录</label>
+                            <input type="text" value="/var/lib/cloudboot/isos" class="input font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">配置文件目录</label>
+                            <input type="text" value="/var/lib/cloudboot/configs" class="input font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">磁盘空间监控</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用磁盘监控</p>
+                                <p class="text-xs text-slate-500">监控系统磁盘使用情况</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">警告阈值</label>
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-1">
+                                    <input type="range" min="0" max="100" value="80" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <span class="text-sm text-slate-300">80%</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">当磁盘使用率超过此阈值时发送警告</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security Settings -->
+        <div x-show="activeTab === 'security'">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">访问控制</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用身份验证</p>
+                                <p class="text-xs text-slate-500">需要用户名和密码访问系统</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-400 mb-2">管理员用户名</label>
+                                <input type="text" class="input" placeholder="admin">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-400 mb-2">管理员密码</label>
+                                <input type="password" class="input" placeholder="••••••••">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">API安全</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">API密钥</label>
+                            <div class="flex items-center space-x-3">
+                                <code class="flex-1 font-mono text-sm bg-slate-800 text-slate-300 px-3 py-2 rounded-lg truncate">cb_sk_0x7f3b9a2c5d8e1f4a6b7c8d9e0f1a2b3c4d5e6f</code>
+                                <button type="button" class="btn-secondary text-sm">重新生成</button>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">用于第三方系统调用API的密钥</p>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用API速率限制</p>
+                                <p class="text-xs text-slate-500">限制每分钟API调用次数</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">CSPM安全</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用驱动签名验证</p>
+                                <p class="text-xs text-slate-500">只允许安装经过签名的CSPM驱动</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用水印校验</p>
+                                <p class="text-xs text-slate-500">检查CSPM驱动包的水印信息</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="flex justify-end space-x-3 pt-6">
+        <button type="button" class="btn-secondary">重置</button>
+        <button type="submit" class="btn-primary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            保存设置
+        </button>
+    </div>
+</div>
+{{end}}

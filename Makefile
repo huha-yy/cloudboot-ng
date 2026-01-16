@@ -49,9 +49,12 @@ dev:
 	@echo "🚀 启动开发环境..."
 	@# 确保输出目录存在
 	@mkdir -p web/static/css
+	@# 先执行一次 Tailwind 构建，确保 output.css 存在
+	@echo "🎨 初始构建 Tailwind CSS..."
+	@tailwindcss -i web/static/css/input.css -o web/static/css/output.css
 	@# 启动 Tailwind CSS watch (后台)
 	@echo "👀 启动 Tailwind CSS watch..."
-	@tailwindcss -i web/static/css/input.css -o web/static/css/output.css --watch > /dev/null 2>&1 &
+	@tailwindcss -i web/static/css/input.css -o web/static/css/output.css --watch &
 	@# 启动 Air (热重载)
 	@echo "🔥 启动 Air 热重载..."
 	@air

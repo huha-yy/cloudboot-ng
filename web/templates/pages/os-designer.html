@@ -1,464 +1,472 @@
-{{define "content-os-designer"}}
-
-<!-- OS Designer Header with Actions -->
-<div class="flex items-center justify-between mb-6">
-    <button onclick="window.openProfileModal()" class="btn-primary">
-        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        New Profile
-    </button>
-</div>
-
-<!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="glass-card hover:border-emerald-500/30 transition-all">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-slate-400 mb-1">Total Profiles</p>
-                <p class="text-2xl font-bold text-white">{{.stats.TotalProfiles}}</p>
-            </div>
-            <div class="text-4xl text-emerald-500">📋</div>
+{{define "content"}}
+<div class="max-w-7xl mx-auto" x-data="profileEditor">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">OS 配置文件</h1>
+            <p class="text-slate-400 mt-1">创建和管理操作系统安装配置</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button @click="openModal()" class="btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                新建配置
+            </button>
         </div>
     </div>
 
-    <div class="glass-card hover:border-emerald-500/30 transition-all">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-slate-400 mb-1">CentOS Profiles</p>
-                <p class="text-2xl font-bold text-white">{{.stats.CentosProfiles}}</p>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass-card hover:border-emerald-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400 mb-1">配置总数</p>
+                    <p class="text-2xl font-bold text-white">{{.stats.TotalProfiles}}</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
             </div>
-            <div class="text-4xl text-rose-500">🔴</div>
+        </div>
+
+        <div class="glass-card hover:border-rose-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400 mb-1">CentOS 配置</p>
+                    <p class="text-2xl font-bold text-white">{{.stats.CentosProfiles}}</p>
+                </div>
+                <div class="w-12 h-12 bg-rose-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card hover:border-amber-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400 mb-1">Ubuntu 配置</p>
+                    <p class="text-2xl font-bold text-white">{{.stats.UbuntuProfiles}}</p>
+                </div>
+                <div class="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card hover:border-violet-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400 mb-1">活跃任务</p>
+                    <p class="text-2xl font-bold text-white">{{.stats.ActiveJobs}}</p>
+                </div>
+                <div class="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="glass-card hover:border-emerald-500/30 transition-all">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-slate-400 mb-1">Ubuntu Profiles</p>
-                <p class="text-2xl font-bold text-white">{{.stats.UbuntuProfiles}}</p>
-            </div>
-            <div class="text-4xl text-amber-500">🟠</div>
-        </div>
-    </div>
-
-    <div class="glass-card hover:border-emerald-500/30 transition-all">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-slate-400 mb-1">Active Jobs</p>
-                <p class="text-2xl font-bold text-white">{{.stats.ActiveJobs}}</p>
-            </div>
-            <div class="text-4xl text-blue-500">⚙️</div>
-        </div>
-    </div>
-</div>
-
-<!-- Profiles Table -->
-<div class="glass-card">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-semibold text-white">OS Profiles</h2>
-        <div class="flex items-center gap-3">
+    <!-- Filters -->
+    <div class="glass-card mb-6 relative z-10">
+        <div class="flex flex-wrap items-center gap-4">
             <!-- Search -->
-            <input type="text"
-                   placeholder="Search profiles..."
-                   class="px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                   hx-get="/api/v1/profiles"
-                   hx-trigger="keyup changed delay:300ms"
-                   hx-target="#profiles-table"
-                   hx-swap="innerHTML"
-                   name="search">
+            <div class="flex-1 min-w-64">
+                <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" placeholder="搜索配置名称..."
+                        hx-get="/api/v1/profiles"
+                        hx-trigger="keyup changed delay:300ms"
+                        hx-target="#profiles-table"
+                        hx-swap="innerHTML"
+                        name="search"
+                        class="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500">
+                </div>
+            </div>
 
-            <!-- Filter by Distro -->
-            <select class="px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                    hx-get="/api/v1/profiles"
-                    hx-trigger="change"
-                    hx-target="#profiles-table"
-                    hx-swap="innerHTML"
-                    name="distro">
-                <option value="">All Distros</option>
-                <option value="centos7">CentOS 7</option>
-                <option value="centos8">CentOS 8</option>
-                <option value="ubuntu20">Ubuntu 20.04</option>
-                <option value="ubuntu22">Ubuntu 22.04</option>
-            </select>
+            <!-- Distro Filter -->
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 flex items-center space-x-2 hover:bg-slate-700 transition-colors">
+                    <span>发行版</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-10">
+                    <div class="py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">全部</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">CentOS 7</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">CentOS 8</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Ubuntu 20.04</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Ubuntu 22.04</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="border-b border-slate-800">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Distro</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Partitions</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Created</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="profiles-table" class="divide-y divide-slate-800">
-                {{range .profiles}}
-                <tr class="hover:bg-slate-800/30 transition-colors">
-                    <td class="px-4 py-3 text-sm text-white font-medium">{{.Name}}</td>
-                    <td class="px-4 py-3 text-sm">
-                        <span class="badge {{if eq .Distro "centos7"}}badge-error{{else if eq .Distro "ubuntu20"}}badge-warning{{else}}badge-info{{end}}">
+    <!-- Profiles Grid -->
+    {{if .profiles}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="profiles-table">
+        {{range .profiles}}
+        <div class="glass-card overflow-hidden hover:border-slate-700 transition-colors group">
+            <!-- Card Header -->
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center
+                        {{if eq .Distro "centos7"}}bg-rose-500/10{{else if eq .Distro "centos8"}}bg-rose-500/10{{else if eq .Distro "ubuntu20"}}bg-amber-500/10{{else if eq .Distro "ubuntu22"}}bg-amber-500/10{{else}}bg-violet-500/10{{end}}">
+                        {{if or (eq .Distro "centos7") (eq .Distro "centos8")}}
+                        <svg class="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                        {{else if or (eq .Distro "ubuntu20") (eq .Distro "ubuntu22")}}
+                        <svg class="w-6 h-6 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                        {{else}}
+                        <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                        {{end}}
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white group-hover:text-emerald-500 transition-colors">{{.Name}}</h3>
+                        <span class="badge {{if eq .Distro "centos7"}}badge-error{{else if eq .Distro "centos8"}}badge-error{{else if eq .Distro "ubuntu20"}}badge-warning{{else if eq .Distro "ubuntu22"}}badge-warning{{else}}badge-info{{end}} text-xs">
                             {{.Distro}}
                         </span>
-                    </td>
-                    <td class="px-4 py-3 text-sm text-slate-300">
-                        {{len .Config.Partitions}} partitions
-                    </td>
-                    <td class="px-4 py-3 text-sm text-slate-400">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
-                    <td class="px-4 py-3 text-sm">
-                        <div class="flex items-center gap-2">
-                            <button @click="editProfile('{{.ID}}')"
-                                    class="text-emerald-500 hover:text-emerald-400 transition-colors"
-                                    title="Edit">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                            </button>
-                            <button @click="previewProfile('{{.ID}}')"
-                                    class="text-blue-500 hover:text-blue-400 transition-colors"
-                                    title="Preview">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </button>
-                            <button @click="cloneProfile('{{.ID}}')"
-                                    class="text-amber-500 hover:text-amber-400 transition-colors"
-                                    title="Clone">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                </svg>
-                            </button>
-                            <button @click="deleteProfile('{{.ID}}')"
-                                    class="text-rose-500 hover:text-rose-400 transition-colors"
-                                    title="Delete">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {{else}}
-                <tr>
-                    <td colspan="5" class="px-4 py-12 text-center">
-                        <div class="flex flex-col items-center">
-                            <div class="text-6xl text-slate-600 mb-4">📋</div>
-                            <p class="text-slate-400 mb-2">No profiles found</p>
-                            <button onclick="window.openProfileModal()" class="btn-primary mt-4">
-                                Create Your First Profile
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {{end}}
-            </tbody>
-        </table>
-    </div>
-</div>
+                    </div>
+                </div>
+            </div>
 
-<!-- Create/Edit Profile Modal -->
-<div x-data="profileEditor"
-     x-show="open"
-     @keydown.escape.window="closeModal()"
-     class="fixed inset-0 z-50 overflow-y-auto"
-     style="display: none;">
+            <!-- Card Body -->
+            <div class="space-y-2 mb-4">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-500">主机名</span>
+                    <span class="text-slate-300 font-mono">{{if .Config.Network.Hostname}}{{.Config.Network.Hostname}}{{else}}-{{end}}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-500">分区数</span>
+                    <span class="text-slate-300">{{len .Config.Partitions}} 个分区</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-500">创建时间</span>
+                    <span class="text-slate-400">{{.CreatedAt.Format "2006-01-02"}}</span>
+                </div>
+            </div>
 
-    <div x-show="open"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click="closeModal()"
-         class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
-
-    <div class="flex min-h-full items-center justify-center p-4">
-        <div x-show="open"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             @click.stop
-             class="relative glass-card w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-6">
-                <h3 class="text-xl font-semibold text-white">
-                    <span x-text="editing ? 'Edit Profile' : 'Create New Profile'"></span>
-                </h3>
-                <button @click="closeModal()"
-                        class="text-slate-400 hover:text-white transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <!-- Card Actions -->
+            <div class="flex gap-2 pt-3 border-t border-slate-800">
+                <button @click="editProfile('{{.ID}}')" class="btn-ghost flex-1 text-sm py-1.5">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    编辑
+                </button>
+                <button @click="previewProfile('{{.ID}}')" class="btn-ghost text-sm py-1.5 px-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </button>
+                <button @click="cloneProfile('{{.ID}}')" class="btn-ghost text-sm py-1.5 px-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                </button>
+                <button @click="deleteProfile('{{.ID}}')" class="px-3 py-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
                 </button>
             </div>
+        </div>
+        {{end}}
+    </div>
+    {{else}}
+    <div class="glass-card text-center py-16">
+        <div class="w-20 h-20 mx-auto bg-slate-800 rounded-2xl flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+            </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">暂无配置文件</h3>
+        <p class="text-slate-400 mb-6">创建您的第一个 OS 配置来开始装机</p>
+        <button @click="openModal()" class="btn-primary">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            新建配置
+        </button>
+    </div>
+    {{end}}
 
-            <!-- Profile Form -->
-            <form @submit.prevent="saveProfile()">
-                <!-- Basic Information -->
-                <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-white mb-4">Basic Information</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                Profile Name <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text"
-                                   x-model="formData.name"
-                                   required
-                                   class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                                   placeholder="e.g., Production CentOS 7">
-                        </div>
+    <!-- Create/Edit Profile Modal -->
+    <div x-show="open" @keydown.escape.window="closeModal()"
+         class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
 
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                Distribution <span class="text-rose-500">*</span>
-                            </label>
-                            <select x-model="formData.distro"
-                                    required
-                                    class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
-                                <option value="">Select distro...</option>
-                                <option value="centos7">CentOS 7</option>
-                                <option value="centos8">CentOS 8</option>
-                                <option value="ubuntu20">Ubuntu 20.04 LTS</option>
-                                <option value="ubuntu22">Ubuntu 22.04 LTS</option>
-                            </select>
-                        </div>
+        <div x-show="open"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="closeModal()"
+             class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
 
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                Repository URL <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="url"
-                                   x-model="formData.config.repo_url"
-                                   required
-                                   class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                                   placeholder="http://mirror.example.com/centos/7/os/x86_64">
-                        </div>
-                    </div>
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div x-show="open"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 @click.stop
+                 class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+
+                <!-- Modal Header -->
+                <div class="sticky top-0 bg-slate-900 px-6 py-4 border-b border-slate-800 flex items-center justify-between z-10">
+                    <h3 class="text-lg font-semibold text-white">
+                        <span x-text="editing ? '编辑配置' : '新建配置'"></span>
+                    </h3>
+                    <button @click="closeModal()" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
 
-                <!-- Network Configuration -->
-                <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-white mb-4">Network Configuration</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                Hostname <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text"
-                                   x-model="formData.config.network.hostname"
-                                   required
-                                   class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                                   placeholder="server01">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                IP Address <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text"
-                                   x-model="formData.config.network.ip"
-                                   required
-                                   pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
-                                   class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                                   placeholder="192.168.1.100">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                Netmask <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text"
-                                   x-model="formData.config.network.netmask"
-                                   required
-                                   class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                                   placeholder="255.255.255.0">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                Gateway <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text"
-                                   x-model="formData.config.network.gateway"
-                                   required
-                                   class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                                   placeholder="192.168.1.1">
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                DNS Servers (comma-separated)
-                            </label>
-                            <input type="text"
-                                   x-model="formData.config.network.dns"
-                                   class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                                   placeholder="8.8.8.8, 8.8.4.4">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Partition Configuration -->
-                <div class="mb-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-lg font-semibold text-white">Disk Partitions</h4>
-                        <button type="button"
-                                @click="addPartition()"
-                                class="btn-secondary text-sm">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                <!-- Profile Form -->
+                <form @submit.prevent="saveProfile()" class="p-6">
+                    <!-- Basic Information -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-white mb-4 flex items-center">
+                            <svg class="w-5 h-5 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            Add Partition
-                        </button>
+                            基本信息
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    配置名称 <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" x-model="formData.name" required
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    placeholder="例如：Production CentOS 7">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    操作系统 <span class="text-rose-500">*</span>
+                                </label>
+                                <select x-model="formData.distro" required
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                                    <option value="">选择发行版...</option>
+                                    <option value="centos7">CentOS 7</option>
+                                    <option value="centos8">CentOS 8 / Rocky Linux 8</option>
+                                    <option value="ubuntu20">Ubuntu 20.04 LTS</option>
+                                    <option value="ubuntu22">Ubuntu 22.04 LTS</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    软件源 URL <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="url" x-model="formData.config.repo_url" required
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono text-sm"
+                                    placeholder="http://mirror.example.com/centos/7/os/x86_64">
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="space-y-3">
-                        <template x-for="(partition, index) in formData.config.partitions" :key="index">
-                            <div class="glass-card bg-slate-800/50 border-slate-700">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-300 mb-2">Mount Point</label>
-                                        <input type="text"
-                                               x-model="partition.mount_point"
-                                               required
-                                               class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm focus:outline-none focus:border-emerald-500"
-                                               placeholder="/">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-300 mb-2">Size</label>
-                                        <input type="text"
-                                               x-model="partition.size"
-                                               required
-                                               class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm focus:outline-none focus:border-emerald-500"
-                                               placeholder="50GB">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-300 mb-2">Filesystem</label>
-                                        <select x-model="partition.fstype"
-                                                required
+                    <!-- Network Configuration -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-white mb-4 flex items-center">
+                            <svg class="w-5 h-5 text-violet-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"></path>
+                            </svg>
+                            网络配置
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    主机名 <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" x-model="formData.config.network.hostname" required
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    placeholder="server01">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    IP 地址 <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" x-model="formData.config.network.ip" required
+                                    pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono"
+                                    placeholder="192.168.1.100">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    子网掩码 <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" x-model="formData.config.network.netmask" required
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono"
+                                    placeholder="255.255.255.0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    网关 <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" x-model="formData.config.network.gateway" required
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono"
+                                    placeholder="192.168.1.1">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    DNS 服务器 (逗号分隔)
+                                </label>
+                                <input type="text" x-model="formData.config.network.dns"
+                                    class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono"
+                                    placeholder="8.8.8.8, 8.8.4.4">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Partition Configuration -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-white flex items-center">
+                                <svg class="w-5 h-5 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                                </svg>
+                                磁盘分区
+                            </h4>
+                            <button type="button" @click="addPartition()" class="btn-secondary text-sm">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                添加分区
+                            </button>
+                        </div>
+
+                        <div class="space-y-3">
+                            <template x-for="(partition, index) in formData.config.partitions" :key="index">
+                                <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">挂载点</label>
+                                            <input type="text" x-model="partition.mount_point" required
+                                                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm focus:outline-none focus:border-emerald-500"
+                                                placeholder="/">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">大小</label>
+                                            <input type="text" x-model="partition.size" required
+                                                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm focus:outline-none focus:border-emerald-500"
+                                                placeholder="50GB">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-2">文件系统</label>
+                                            <select x-model="partition.fstype" required
                                                 class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm focus:outline-none focus:border-emerald-500">
-                                            <option value="ext4">ext4</option>
-                                            <option value="xfs">xfs</option>
-                                            <option value="swap">swap</option>
-                                            <option value="btrfs">btrfs</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <button type="button"
-                                                @click="removePartition(index)"
-                                                class="w-full px-3 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded text-sm transition-colors">
-                                            Remove
-                                        </button>
+                                                <option value="ext4">ext4</option>
+                                                <option value="xfs">xfs</option>
+                                                <option value="swap">swap</option>
+                                                <option value="btrfs">btrfs</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <button type="button" @click="removePartition(index)"
+                                                class="w-full px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded text-sm transition-colors">
+                                                删除
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
 
-                        <div x-show="formData.config.partitions.length === 0" class="text-center py-8 text-slate-500">
-                            No partitions defined. Click "Add Partition" to get started.
+                            <div x-show="formData.config.partitions.length === 0" class="text-center py-8 text-slate-500">
+                                暂无分区。点击"添加分区"开始配置。
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Form Actions -->
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                    <button type="button"
-                            @click="closeModal()"
-                            class="btn-ghost">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                            class="btn-primary"
-                            :disabled="submitting">
-                        <span x-show="!submitting">Save Profile</span>
-                        <span x-show="submitting">Saving...</span>
-                    </button>
-                </div>
-            </form>
+                    <!-- Form Actions -->
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                        <button type="button" @click="closeModal()" class="btn-secondary">
+                            取消
+                        </button>
+                        <button type="submit" class="btn-primary" :disabled="submitting">
+                            <span x-show="!submitting">保存配置</span>
+                            <span x-show="submitting">保存中...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Preview Modal -->
-<div x-data="{open: false, content: '', loading: false}"
-     @open-preview.window="open = true; loading = true; fetch('/api/v1/profiles/' + $event.detail.id + '/preview').then(r => r.text()).then(text => {content = text; loading = false;})"
-     x-show="open"
-     @keydown.escape.window="open = false"
-     class="fixed inset-0 z-50 overflow-y-auto"
-     style="display: none;">
+    <!-- Preview Modal -->
+    <div x-data="{open: false, content: '', loading: false}"
+         @open-preview.window="open = true; loading = true; fetch('/api/v1/profiles/' + $event.detail.id + '/preview').then(r => r.text()).then(text => {content = text; loading = false;})"
+         x-show="open"
+         @keydown.escape.window="open = false"
+         class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
 
-    <div x-show="open"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click="open = false"
-         class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
-
-    <div class="flex min-h-full items-center justify-center p-4">
         <div x-show="open"
              x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             @click.stop
-             class="relative glass-card w-full max-w-4xl">
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="open = false"
+             class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
 
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                <h3 class="text-lg font-semibold text-white">Kickstart/Preseed Preview</h3>
-                <button @click="open = false"
-                        class="text-slate-400 hover:text-white transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div x-show="open"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 @click.stop
+                 class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-4xl">
+
+                <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-white">Kickstart/Preseed 预览</h3>
+                    <button @click="open = false" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <div x-show="loading" class="flex items-center justify-center py-12">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+                    </div>
+
+                    <pre x-show="!loading" class="bg-black p-4 rounded-lg overflow-x-auto text-sm text-emerald-400 font-mono max-h-96 scrollbar-thin" x-text="content"></pre>
+                </div>
             </div>
-
-            <div x-show="loading" class="flex items-center justify-center py-12">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
-            </div>
-
-            <pre x-show="!loading" class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-sm text-slate-300 font-mono max-h-96" x-text="content"></pre>
         </div>
     </div>
 </div>
 
 <script>
-// Global modal state - simpler approach
-window.profileModalState = {
-    open: false,
-    editing: false,
-    currentProfile: null
-};
-
-// Global functions for modal control
-window.openProfileModal = function(profile = null) {
-    window.profileModalState.open = true;
-    window.profileModalState.editing = !!profile;
-    window.profileModalState.currentProfile = profile;
-    window.dispatchEvent(new CustomEvent('profile-modal-open', {detail: profile}));
-};
-
-window.closeProfileModal = function() {
-    window.profileModalState.open = false;
-    window.profileModalState.editing = false;
-    window.profileModalState.currentProfile = null;
-};
-
-// Register Alpine.js component
 document.addEventListener('alpine:init', () => {
     Alpine.data('profileEditor', () => ({
         open: false,
@@ -479,12 +487,7 @@ document.addEventListener('alpine:init', () => {
                 partitions: []
             }
         },
-        init() {
-            // Listen for modal open events
-            window.addEventListener('profile-modal-open', (e) => {
-                this.openModal(e.detail);
-            });
-        },
+        
         openModal(profile = null) {
             this.editing = !!profile;
             if (profile) {
@@ -494,10 +497,11 @@ document.addEventListener('alpine:init', () => {
             }
             this.open = true;
         },
+        
         closeModal() {
             this.open = false;
-            window.closeProfileModal();
         },
+        
         resetForm() {
             this.formData = {
                 name: '',
@@ -515,6 +519,7 @@ document.addEventListener('alpine:init', () => {
                 }
             };
         },
+        
         addPartition() {
             this.formData.config.partitions.push({
                 mount_point: '',
@@ -522,9 +527,11 @@ document.addEventListener('alpine:init', () => {
                 fstype: 'ext4'
             });
         },
+        
         removePartition(index) {
             this.formData.config.partitions.splice(index, 1);
         },
+        
         async saveProfile() {
             this.submitting = true;
             try {
@@ -541,55 +548,50 @@ document.addEventListener('alpine:init', () => {
                     window.location.reload();
                 } else {
                     const error = await response.json();
-                    alert('Error: ' + (error.error || 'Failed to save profile'));
+                    alert('错误: ' + (error.error || '保存失败'));
                 }
             } catch (error) {
-                alert('Network error: ' + error.message);
+                alert('网络错误: ' + error.message);
             } finally {
                 this.submitting = false;
             }
+        },
+        
+        editProfile(id) {
+            fetch(`/api/v1/profiles/${id}`)
+                .then(r => r.json())
+                .then(profile => {
+                    this.openModal(profile);
+                });
+        },
+        
+        previewProfile(id) {
+            window.dispatchEvent(new CustomEvent('open-preview', {detail: {id}}));
+        },
+        
+        cloneProfile(id) {
+            fetch(`/api/v1/profiles/${id}`)
+                .then(r => r.json())
+                .then(profile => {
+                    profile.name = profile.name + ' (副本)';
+                    delete profile.id;
+                    this.openModal(profile);
+                });
+        },
+        
+        deleteProfile(id) {
+            if (!confirm('确定要删除此配置吗？')) return;
+
+            fetch(`/api/v1/profiles/${id}`, {method: 'DELETE'})
+                .then(r => {
+                    if (r.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('删除失败');
+                    }
+                });
         }
     }));
 });
-
-function editProfile(id) {
-    fetch(`/api/v1/profiles/${id}`)
-        .then(r => r.json())
-        .then(profile => {
-            window.openProfileModal(profile);
-        });
-}
-
-function previewProfile(id) {
-    window.dispatchEvent(new CustomEvent('open-preview', {detail: {id}}));
-}
-
-function cloneProfile(id) {
-    fetch(`/api/v1/profiles/${id}`)
-        .then(r => r.json())
-        .then(profile => {
-            profile.name = profile.name + ' (Copy)';
-            delete profile.id;
-            window.openProfileModal(profile);
-        });
-}
-
-function deleteProfile(id) {
-    if (!confirm('Are you sure you want to delete this profile?')) return;
-
-    fetch(`/api/v1/profiles/${id}`, {method: 'DELETE'})
-        .then(r => {
-            if (r.ok) {
-                window.location.reload();
-            } else {
-                alert('Failed to delete profile');
-            }
-        });
-}
 </script>
-
-{{end}}
-
-{{define "content"}}
-{{template "content-os-designer" .}}
 {{end}}

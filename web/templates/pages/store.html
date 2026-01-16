@@ -1,16 +1,45 @@
-{{define "content-store"}}
-<div class="max-w-7xl mx-auto">
-    <!-- Import Section -->
-    <div class="glass-card mb-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-xl font-semibold text-white mb-2">Import Provider Package</h2>
-                <p class="text-sm text-slate-400">Upload .cbp (CloudBoot Package) files to extend hardware capabilities</p>
-            </div>
-            <button class="btn-primary">
-                <span class="mr-2">📦</span>
-                Upload .cbp File
+{{define "content"}}
+<div class="max-w-7xl mx-auto" x-data="storeApp()">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">Provider 商店</h1>
+            <p class="text-slate-400 mt-1">管理硬件配置 Provider 插件包</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button @click="showImportModal = true" class="btn-secondary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                导入包
             </button>
+            <button @click="refreshProviders()" class="btn-primary">
+                <svg class="w-4 h-4 mr-2" :class="{'animate-spin': loading}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                同步
+            </button>
+        </div>
+    </div>
+
+    <!-- License Status -->
+    <div class="bg-gradient-to-r from-violet-500/10 to-emerald-500/10 border border-violet-500/20 rounded-xl p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white">{{if .license}}{{.license.Tier}}{{else}}Community{{end}} 许可证</h3>
+                    <p class="text-sm text-slate-400">有效期至 <span class="text-emerald-500 font-mono">{{if .license}}{{.license.ExpiresAt}}{{else}}永久{{end}}</span></p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-slate-400">可用 Provider 数</p>
+                <p class="text-2xl font-bold text-white"><span x-text="providers.length">{{len .providers}}</span> / {{if .license}}{{.license.ProvidersTotal}}{{else}}∞{{end}}</p>
+            </div>
         </div>
     </div>
 
@@ -19,114 +48,442 @@
         <div class="glass-card hover:border-emerald-500/30 transition-all">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-slate-400 mb-1">Total Providers</p>
+                    <p class="text-sm text-slate-400 mb-1">总 Providers</p>
                     <p class="text-2xl font-bold text-white">{{.stats.TotalProviders}}</p>
                 </div>
-                <div class="text-4xl text-emerald-500">📦</div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
             </div>
         </div>
 
         <div class="glass-card hover:border-blue-500/30 transition-all">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-slate-400 mb-1">RAID Controllers</p>
+                    <p class="text-sm text-slate-400 mb-1">RAID 控制器</p>
                     <p class="text-2xl font-bold text-white">{{.stats.RaidProviders}}</p>
                 </div>
-                <div class="text-4xl text-blue-500">💾</div>
+                <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                    </svg>
+                </div>
             </div>
         </div>
 
         <div class="glass-card hover:border-violet-500/30 transition-all">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-slate-400 mb-1">BIOS Tools</p>
+                    <p class="text-sm text-slate-400 mb-1">BIOS 工具</p>
                     <p class="text-2xl font-bold text-white">{{.stats.BiosProviders}}</p>
                 </div>
-                <div class="text-4xl text-violet-500">⚙️</div>
+                <div class="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Providers Grid -->
-    <div class="glass-card">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-semibold text-white">Installed Providers</h2>
-            <div class="flex gap-2">
-                <button class="btn-ghost">Filter</button>
-                <button class="btn-ghost">Sort</button>
+    <!-- Filters -->
+    <div class="flex flex-wrap items-center gap-4 mb-6">
+        <!-- Search -->
+        <div class="flex-1 min-w-64">
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" x-model="searchQuery" @input.debounce.300ms="filterProviders()" placeholder="搜索 Provider 名称、厂商..."
+                    class="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500">
             </div>
         </div>
 
-        {{if .providers}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {{range .providers}}
-            <div class="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-emerald-500/30 transition-all">
+        <!-- Category Filter -->
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg text-sm text-slate-300 flex items-center space-x-2 hover:bg-slate-800 transition-colors">
+                <span x-text="categoryLabel">分类</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-10">
+                <div class="py-1">
+                    <a href="#" @click.prevent="setCategory('all', '全部分类'); open = false" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">全部分类</a>
+                    <a href="#" @click.prevent="setCategory('RAID', 'RAID 控制器'); open = false" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">RAID 控制器</a>
+                    <a href="#" @click.prevent="setCategory('BIOS', 'BIOS/UEFI'); open = false" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">BIOS/UEFI</a>
+                    <a href="#" @click.prevent="setCategory('Network', '网络'); open = false" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">网络</a>
+                    <a href="#" @click.prevent="setCategory('Firmware', '固件'); open = false" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">固件</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="flex items-center space-x-2">
+            <button @click="setStatus('installed')" :class="status === 'installed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">已安装</button>
+            <button @click="setStatus('available')" :class="status === 'available' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-lg text-sm transition-colors">可用</button>
+            <button @click="setStatus('')" :class="status === '' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-lg text-sm transition-colors">全部</button>
+        </div>
+    </div>
+
+    <!-- Provider Grid -->
+    {{if .providers}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <template x-for="provider in filteredProviders" :key="provider.id">
+            <div class="glass-card overflow-hidden hover:border-slate-700 transition-colors group">
                 <!-- Provider Header -->
                 <div class="flex items-start justify-between mb-3">
-                    <div class="flex-1">
-                        <h3 class="text-lg font-semibold text-white mb-1">{{.Name}}</h3>
-                        <p class="text-xs text-slate-500 font-mono">{{.Vendor}}</p>
+                    <div class="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
                     </div>
-                    <span class="badge badge-info text-xs">{{.Category}}</span>
+                    <div class="flex items-center space-x-2">
+                        <template x-if="provider.Certified">
+                            <span class="badge badge-success">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                认证
+                            </span>
+                        </template>
+                        <template x-if="provider.Installed">
+                            <span class="badge badge-discovered">已安装</span>
+                        </template>
+                    </div>
                 </div>
+
+                <h3 class="text-lg font-semibold text-white mb-1" x-text="provider.Name"></h3>
+                <p class="text-xs text-slate-500 font-mono mb-3" x-text="provider.Vendor"></p>
 
                 <!-- Provider Info -->
                 <div class="space-y-2 mb-3">
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-400">Version:</span>
-                        <span class="font-mono text-slate-300">{{.Version}}</span>
+                        <span class="text-slate-400">版本:</span>
+                        <span class="font-mono text-slate-300" x-text="provider.Version"></span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-400">Size:</span>
-                        <span class="font-mono text-slate-300">{{.Size}}</span>
+                        <span class="text-slate-400">分类:</span>
+                        <span class="text-slate-300" x-text="provider.Category"></span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-slate-400">Imported:</span>
-                        <span class="text-slate-400 text-xs">{{.CreatedAt.Format "2006-01-02"}}</span>
+                        <span class="text-slate-400">大小:</span>
+                        <span class="font-mono text-slate-300" x-text="provider.Size || '-'"></span>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex gap-2">
-                    <button class="btn-ghost flex-1 text-sm">Details</button>
-                    <button class="btn-destructive text-sm px-3">Delete</button>
+                <div class="flex gap-2 pt-3 border-t border-slate-800">
+                    <template x-if="provider.Installed">
+                        <button @click="uninstallProvider(provider.ID)" class="btn-destructive flex-1 text-sm">卸载</button>
+                    </template>
+                    <template x-if="!provider.Installed">
+                        <button @click="installProvider(provider.ID)" class="btn-primary flex-1 text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            安装
+                        </button>
+                    </template>
+                    <button class="btn-ghost text-sm px-3">详情</button>
                 </div>
             </div>
-            {{end}}
-        </div>
-        {{else}}
-        <div class="text-center py-12">
-            <div class="text-6xl mb-4">📦</div>
-            <p class="text-slate-400 mb-2">No providers installed yet</p>
-            <p class="text-sm text-slate-500 mb-4">Upload .cbp packages to extend hardware support</p>
-            <button class="btn-primary">
-                <span class="mr-2">⬆️</span>
-                Upload Your First Provider
-            </button>
-        </div>
-        {{end}}
+        </template>
     </div>
+    {{else}}
+    <div class="glass-card text-center py-16">
+        <svg class="w-16 h-16 mx-auto text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-slate-400 mb-2">暂无 Provider</h3>
+        <p class="text-slate-500 mb-4">上传 .cbp 包文件来扩展硬件支持</p>
+        <button @click="showImportModal = true" class="btn-primary">
+            导入 Provider
+        </button>
+    </div>
+    {{end}}
 
     <!-- Info Box -->
     <div class="glass-card mt-6 bg-blue-500/5 border-blue-500/30">
         <div class="flex items-start gap-3">
-            <div class="text-2xl">ℹ️</div>
+            <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
             <div class="flex-1">
-                <h3 class="text-white font-semibold mb-1">About CloudBoot Packages (.cbp)</h3>
+                <h3 class="text-white font-semibold mb-1">关于 CloudBoot Packages (.cbp)</h3>
                 <p class="text-sm text-slate-400 mb-2">
-                    CloudBoot Package files are encrypted, vendor-specific hardware configuration tools.
-                    They enable CloudBoot to manage RAID controllers, BIOS settings, and other hardware components
-                    from different manufacturers.
+                    CloudBoot Package 是加密的、厂商特定的硬件配置工具。
+                    它们使 CloudBoot 能够管理来自不同厂商的 RAID 控制器、BIOS 设置和其他硬件组件。
                 </p>
                 <p class="text-xs text-slate-500">
-                    Security: All providers run in isolated sandboxes and are automatically cleaned from memory after execution.
+                    安全说明：所有 Provider 都在隔离沙箱中运行，执行后自动从内存中清除。
                 </p>
             </div>
         </div>
     </div>
-</div>
-{{end}}
 
-{{define "content"}}
-{{template "content-store" .}}
+    <!-- Import Modal -->
+    <div x-show="showImportModal" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click="showImportModal = false"></div>
+            <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-md">
+                <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-white">导入 Provider 包</h3>
+                    <button @click="showImportModal = false" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form @submit.prevent="importPackage()" class="p-6">
+                    <div class="border-2 border-dashed border-slate-700 rounded-xl p-8 text-center hover:border-emerald-500/50 transition-colors cursor-pointer"
+                        @click="$refs.fileInput.click()"
+                        @dragover.prevent="isDragging = true"
+                        @dragleave.prevent="isDragging = false"
+                        @drop.prevent="handleDrop($event)"
+                        :class="{'border-emerald-500': isDragging}">
+                        <template x-if="!selectedFile">
+                            <div>
+                                <svg class="w-12 h-12 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <p class="text-slate-400 mb-2">拖拽文件到这里或点击选择</p>
+                                <p class="text-xs text-slate-500">仅支持加密的 .cbp 文件</p>
+                            </div>
+                        </template>
+                        <template x-if="selectedFile">
+                            <div>
+                                <svg class="w-12 h-12 mx-auto text-emerald-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-white font-medium mb-1" x-text="selectedFile.name"></p>
+                                <p class="text-xs text-slate-500" x-text="formatFileSize(selectedFile.size)"></p>
+                            </div>
+                        </template>
+                        <input type="file" x-ref="fileInput" @change="handleFileSelect($event)" accept=".cbp" class="hidden">
+                    </div>
+                    <div x-show="importError" class="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400" x-text="importError"></div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" @click="showImportModal = false; selectedFile = null; importError = ''" class="btn-secondary">
+                            取消
+                        </button>
+                        <button type="submit" :disabled="!selectedFile || importing" class="btn-primary disabled:opacity-50">
+                            <svg x-show="importing" class="w-4 h-4 animate-spin mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            导入
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="fixed bottom-4 right-4 z-50 space-y-2">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.show" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-x-full"
+                x-transition:enter-end="opacity-100 transform translate-x-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 transform translate-x-0"
+                x-transition:leave-end="opacity-0 transform translate-x-full"
+                :class="toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-red-500/10 border-red-500/20 text-red-400'"
+                class="px-4 py-3 rounded-lg border flex items-center space-x-3 min-w-64">
+                <template x-if="toast.type === 'success'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </template>
+                <template x-if="toast.type === 'error'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </template>
+                <span x-text="toast.message"></span>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+function storeApp() {
+    return {
+        providers: {{if .providersJSON}}{{.providersJSON}}{{else}}[]{{end}},
+        filteredProviders: [],
+        loading: false,
+        searchQuery: '',
+        category: 'all',
+        categoryLabel: '分类',
+        status: 'installed',
+        showImportModal: false,
+        selectedFile: null,
+        importing: false,
+        importError: '',
+        isDragging: false,
+        toasts: [],
+
+        init() {
+            this.filterProviders();
+        },
+
+        async refreshProviders() {
+            this.loading = true;
+            try {
+                const resp = await fetch('/api/v1/providers');
+                if (resp.ok) {
+                    this.providers = await resp.json();
+                    this.filterProviders();
+                }
+            } catch (e) {
+                this.showToast('error', '加载 Provider 失败');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        filterProviders() {
+            let result = [...this.providers];
+
+            if (this.searchQuery) {
+                const q = this.searchQuery.toLowerCase();
+                result = result.filter(p =>
+                    p.Name.toLowerCase().includes(q) ||
+                    p.Vendor.toLowerCase().includes(q)
+                );
+            }
+
+            if (this.category !== 'all') {
+                result = result.filter(p => p.Category === this.category);
+            }
+
+            if (this.status === 'installed') {
+                result = result.filter(p => p.Installed);
+            } else if (this.status === 'available') {
+                result = result.filter(p => !p.Installed);
+            }
+
+            this.filteredProviders = result;
+        },
+
+        setCategory(cat, label) {
+            this.category = cat;
+            this.categoryLabel = label;
+            this.filterProviders();
+        },
+
+        setStatus(s) {
+            this.status = s;
+            this.filterProviders();
+        },
+
+        async installProvider(id) {
+            try {
+                const resp = await fetch(`/api/v1/providers/${id}/install`, { method: 'POST' });
+                if (resp.ok) {
+                    this.showToast('success', 'Provider 安装成功');
+                    this.refreshProviders();
+                } else {
+                    const data = await resp.json();
+                    this.showToast('error', data.error || '安装失败');
+                }
+            } catch (e) {
+                this.showToast('error', '安装失败');
+            }
+        },
+
+        async uninstallProvider(id) {
+            if (!confirm('确定要卸载此 Provider 吗？')) return;
+            try {
+                const resp = await fetch(`/api/v1/providers/${id}/uninstall`, { method: 'POST' });
+                if (resp.ok) {
+                    this.showToast('success', 'Provider 已卸载');
+                    this.refreshProviders();
+                } else {
+                    const data = await resp.json();
+                    this.showToast('error', data.error || '卸载失败');
+                }
+            } catch (e) {
+                this.showToast('error', '卸载失败');
+            }
+        },
+
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.name.endsWith('.cbp')) {
+                this.selectedFile = file;
+                this.importError = '';
+            } else {
+                this.importError = '请选择 .cbp 文件';
+            }
+        },
+
+        handleDrop(event) {
+            this.isDragging = false;
+            const file = event.dataTransfer.files[0];
+            if (file && file.name.endsWith('.cbp')) {
+                this.selectedFile = file;
+                this.importError = '';
+            } else {
+                this.importError = '请选择 .cbp 文件';
+            }
+        },
+
+        async importPackage() {
+            if (!this.selectedFile) return;
+
+            this.importing = true;
+            this.importError = '';
+
+            const formData = new FormData();
+            formData.append('package', this.selectedFile);
+
+            try {
+                const resp = await fetch('/api/v1/providers/import', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (resp.ok) {
+                    this.showToast('success', 'Provider 导入成功');
+                    this.showImportModal = false;
+                    this.selectedFile = null;
+                    this.refreshProviders();
+                } else {
+                    const data = await resp.json();
+                    this.importError = data.error || '导入失败';
+                }
+            } catch (e) {
+                this.importError = '导入失败: ' + e.message;
+            } finally {
+                this.importing = false;
+            }
+        },
+
+        formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        },
+
+        showToast(type, message) {
+            const id = Date.now();
+            this.toasts.push({ id, type, message, show: true });
+            setTimeout(() => {
+                const toast = this.toasts.find(t => t.id === id);
+                if (toast) toast.show = false;
+                setTimeout(() => {
+                    this.toasts = this.toasts.filter(t => t.id !== id);
+                }, 300);
+            }, 3000);
+        }
+    }
+}
+</script>
 {{end}}

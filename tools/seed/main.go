@@ -163,7 +163,7 @@ func seedMachines() []models.Machine {
 					Cores: 48,
 				},
 				Memory: models.MemoryInfo{
-					TotalGB: 256,
+					TotalBytes: 256 * 1024 * 1024 * 1024, // 256GB
 				},
 			},
 			CreatedAt: time.Now(),
@@ -187,7 +187,7 @@ func seedMachines() []models.Machine {
 					Cores: 24,
 				},
 				Memory: models.MemoryInfo{
-					TotalGB: 128,
+					TotalBytes: 128 * 1024 * 1024 * 1024, // 128GB
 				},
 			},
 			CreatedAt: time.Now(),
@@ -211,7 +211,7 @@ func seedMachines() []models.Machine {
 					Cores: 40,
 				},
 				Memory: models.MemoryInfo{
-					TotalGB: 192,
+					TotalBytes: 192 * 1024 * 1024 * 1024, // 192GB
 				},
 			},
 			CreatedAt: time.Now(),

@@ -1,70 +1,66 @@
-{{/* Badge Component */}}
-
-{{/* Online Badge */}}
 {{define "badge-online"}}
-<span class="badge badge-online">
-    <span class="dot-pulse mr-2"></span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+    <span class="relative flex h-2 w-2 mr-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+    </span>
     {{if .text}}{{.text}}{{else}}Online{{end}}
 </span>
 {{end}}
 
-{{/* Offline Badge */}}
 {{define "badge-offline"}}
-<span class="badge badge-offline">
-    <span class="dot mr-2"></span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+    <span class="relative flex h-2 w-2 mr-2">
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+    </span>
     {{if .text}}{{.text}}{{else}}Offline{{end}}
 </span>
 {{end}}
 
-{{/* Success Badge */}}
-{{define "badge-success"}}
-<span class="badge badge-success">
-    {{if .text}}{{.text}}{{else}}Success{{end}}
+{{define "badge-installing"}}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+    <span class="relative flex h-2 w-2 mr-2">
+        <span class="animate-pulse relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+    </span>
+    {{if .text}}{{.text}}{{else}}Installing{{end}}
 </span>
 {{end}}
 
-{{/* Error Badge */}}
 {{define "badge-error"}}
-<span class="badge badge-error">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+    <span class="relative flex h-2 w-2 mr-2">
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+    </span>
     {{if .text}}{{.text}}{{else}}Error{{end}}
 </span>
 {{end}}
 
-{{/* Warning Badge */}}
-{{define "badge-warning"}}
-<span class="badge badge-warning">
-    {{if .text}}{{.text}}{{else}}Warning{{end}}
+{{define "badge-discovered"}}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+    <span class="relative flex h-2 w-2 mr-2">
+        <span class="animate-bounce relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+    </span>
+    {{if .text}}{{.text}}{{else}}Discovered{{end}}
 </span>
 {{end}}
 
-{{/* Info Badge */}}
-{{define "badge-info"}}
-<span class="badge badge-info">
-    {{if .text}}{{.text}}{{else}}Info{{end}}
-</span>
-{{end}}
-
-{{/* Custom Badge */}}
-{{define "badge"}}
-<span class="badge {{.class}}">
-    {{if .icon}}<span class="{{.icon}} mr-1"></span>{{end}}
-    {{.text}}
-</span>
-{{end}}
-
-{{/* Status Badge (with color mapping) */}}
 {{define "badge-status"}}
 {{if eq .status "online"}}
     {{template "badge-online" .}}
 {{else if eq .status "offline"}}
     {{template "badge-offline" .}}
-{{else if eq .status "success"}}
-    {{template "badge-success" .}}
+{{else if eq .status "installing"}}
+    {{template "badge-installing" .}}
 {{else if eq .status "error"}}
     {{template "badge-error" .}}
-{{else if eq .status "warning"}}
-    {{template "badge-warning" .}}
+{{else if eq .status "discovered"}}
+    {{template "badge-discovered" .}}
 {{else}}
-    {{template "badge-info" .}}
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-400 border border-slate-500/20">
+        <span class="relative flex h-2 w-2 mr-2">
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+        </span>
+        {{if .text}}{{.text}}{{else}}{{.status}}{{end}}
+    </span>
 {{end}}
 {{end}}

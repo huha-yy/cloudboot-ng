@@ -1,111 +1,365 @@
-{{define "content-machines"}}
+{{define "content"}}
 <div class="max-w-7xl mx-auto">
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-4 gap-4 mb-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">物理服务器</h1>
+            <p class="text-slate-400 mt-1">管理和监控数据中心的物理机器</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="document.getElementById('discover-modal').classList.remove('hidden')"
+                class="btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                发现新机器
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Machines -->
         <div class="glass-card hover:border-emerald-500/30 transition-all">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-slate-400 mb-1">Total Machines</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.TotalMachines}}</p>
+                    <p class="text-slate-400 text-sm">机器总数</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.stats.TotalMachines}}</p>
                 </div>
-                <div class="text-4xl text-emerald-500">💻</div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                    </svg>
+                </div>
             </div>
         </div>
 
+        <!-- Online Machines -->
         <div class="glass-card hover:border-emerald-500/30 transition-all">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-slate-400 mb-1">Online</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.OnlineMachines}}</p>
+                    <p class="text-slate-400 text-sm">在线</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.stats.OnlineMachines}}</p>
                 </div>
-                <div class="text-4xl text-emerald-500">✅</div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <div class="relative">
+                        <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                        <div class="absolute inset-0 w-3 h-3 bg-emerald-500 rounded-full animate-ping"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="w-full bg-slate-800 rounded-full h-2">
+                    <div class="bg-emerald-500 h-2 rounded-full" style="width: {{if .stats.TotalMachines}}{{mul (div .stats.OnlineMachines .stats.TotalMachines) 100}}{{else}}0{{end}}%"></div>
+                </div>
             </div>
         </div>
 
-        <div class="glass-card hover:border-emerald-500/30 transition-all">
+        <!-- Offline Machines -->
+        <div class="glass-card hover:border-slate-500/30 transition-all">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-slate-400 mb-1">Offline</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.OfflineMachines}}</p>
+                    <p class="text-slate-400 text-sm">离线</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.stats.OfflineMachines}}</p>
                 </div>
-                <div class="text-4xl text-slate-500">⛔</div>
+                <div class="w-12 h-12 bg-slate-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                    </svg>
+                </div>
             </div>
         </div>
 
-        <div class="glass-card hover:border-emerald-500/30 transition-all">
+        <!-- Provisioned Today -->
+        <div class="glass-card hover:border-violet-500/30 transition-all">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-slate-400 mb-1">Provisioned Today</p>
-                    <p class="text-2xl font-bold text-white">{{.stats.ProvisionedToday}}</p>
+                    <p class="text-slate-400 text-sm">今日装机</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.stats.ProvisionedToday}}</p>
                 </div>
-                <div class="text-4xl text-blue-500">🚀</div>
+                <div class="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Machines Table -->
-    <div class="glass-card">
-    <div class="flex items-center justify-between mb-4">
-    <h2 class="text-xl font-semibold text-white">Physical Machines</h2>
-    <button class="btn-primary">+ Add Machine</button>
+    <!-- Filters -->
+    <div class="glass-card mb-6 relative z-10">
+        <div class="flex flex-wrap items-center gap-4">
+            <!-- Search -->
+            <div class="flex-1 min-w-64">
+                <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" placeholder="搜索主机名、IP、MAC 地址..."
+                        hx-get="/api/machines/search" hx-trigger="keyup changed delay:300ms" hx-target="#machine-table-body"
+                        class="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 flex items-center space-x-2 hover:bg-slate-700 transition-colors">
+                    <span>状态筛选</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-10">
+                    <div class="py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">全部</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-emerald-500 hover:bg-slate-700">在线</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-violet-500 hover:bg-slate-700">装机中</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-amber-500 hover:bg-slate-700">就绪</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-rose-500 hover:bg-slate-700">错误</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="flex items-center space-x-2 ml-auto">
+                <button class="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-700 transition-colors disabled:opacity-50" disabled>
+                    批量装机
+                </button>
+                <button class="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-700 transition-colors disabled:opacity-50" disabled>
+                    导出
+                </button>
+            </div>
+        </div>
     </div>
+
+    <!-- Machine Table -->
+    <div class="glass-card overflow-hidden">
         {{if .machines}}
         <div class="overflow-x-auto">
             <table class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-800">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Hostname</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">MAC Address</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">IP Address</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Status</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Created</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-400">Actions</th>
+                <thead class="bg-slate-800/50">
+                    <tr class="text-left text-slate-400 text-sm">
+                        <th class="px-6 py-4 font-medium">
+                            <input type="checkbox" class="rounded bg-slate-700 border-slate-600 text-emerald-500 focus:ring-emerald-500/50">
+                        </th>
+                        <th class="px-6 py-4 font-medium">主机名</th>
+                        <th class="px-6 py-4 font-medium">IP 地址</th>
+                        <th class="px-6 py-4 font-medium">MAC 地址</th>
+                        <th class="px-6 py-4 font-medium">状态</th>
+                        <th class="px-6 py-4 font-medium">创建时间</th>
+                        <th class="px-6 py-4 font-medium">操作</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="machine-table-body" class="divide-y divide-slate-800">
                     {{range .machines}}
-                    <tr class="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
-                        <td class="py-3 px-4">
-                            <a href="/machines/{{.ID}}" class="text-emerald-400 hover:text-emerald-300 font-mono">
-                                {{.Hostname}}
-                            </a>
+                    <tr class="hover:bg-slate-800/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <input type="checkbox" class="rounded bg-slate-700 border-slate-600 text-emerald-500 focus:ring-emerald-500/50">
                         </td>
-                        <td class="py-3 px-4 font-mono text-sm text-slate-300">{{.MACAddress}}</td>
-                        <td class="py-3 px-4 font-mono text-sm text-slate-300">{{.IPAddress}}</td>
-                        <td class="py-3 px-4">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <a href="/machines/{{.ID}}" class="font-medium text-white hover:text-emerald-500 transition-colors">{{.Hostname}}</a>
+                                    <p class="text-xs text-slate-500 font-mono">{{printf "%.8s" .ID}}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-mono text-sm text-slate-300">{{.IPAddress}}</td>
+                        <td class="px-6 py-4 font-mono text-sm text-slate-400">{{.MacAddress}}</td>
+                        <td class="px-6 py-4">
                             {{if eq .Status "ready"}}
                             <span class="badge badge-online">
-                                <span class="dot-pulse mr-2"></span>
-                                Ready
+                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span>
+                                就绪
                             </span>
                             {{else if eq .Status "installing"}}
-                            <span class="badge badge-warning">Installing</span>
+                            <span class="badge badge-installing">
+                                <span class="w-1.5 h-1.5 bg-amber-500 rounded-full mr-1.5 animate-pulse"></span>
+                                装机中
+                            </span>
                             {{else if eq .Status "error"}}
-                            <span class="badge badge-error">Error</span>
+                            <span class="badge badge-error">
+                                <span class="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5"></span>
+                                错误
+                            </span>
+                            {{else if eq .Status "discovered"}}
+                            <span class="badge badge-discovered">
+                                <span class="w-1.5 h-1.5 bg-violet-500 rounded-full mr-1.5 animate-bounce"></span>
+                                已发现
+                            </span>
                             {{else}}
-                            <span class="badge badge-info">{{.Status}}</span>
+                            <span class="badge badge-offline">
+                                <span class="w-1.5 h-1.5 bg-slate-500 rounded-full mr-1.5"></span>
+                                {{.Status}}
+                            </span>
                             {{end}}
                         </td>
-                        <td class="py-3 px-4 text-sm text-slate-400">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
-                        <td class="py-3 px-4">
-                            <button class="btn-ghost text-sm py-1 px-3">View</button>
+                        <td class="px-6 py-4 text-sm text-slate-500">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                        <td class="px-6 py-4">
+                            <div x-data="{ open: false }" class="relative">
+                                <button @click="open = !open" class="p-2 hover:bg-slate-700 rounded-lg transition-colors">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 top-full mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-10">
+                                    <div class="py-1">
+                                        <a href="/machines/{{.ID}}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">查看详情</a>
+                                        <a href="#" onclick="openJobModal('{{.ID}}', '{{.Hostname}}')" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">运行任务</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">编辑标签</a>
+                                        <hr class="my-1 border-slate-700">
+                                        <a href="#" class="block px-4 py-2 text-sm text-rose-500 hover:bg-slate-700">删除</a>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {{end}}
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-slate-800 flex items-center justify-between">
+            <p class="text-sm text-slate-500">显示 <span class="text-white">{{len .machines}}</span> / <span class="text-white">{{.stats.TotalMachines}}</span> 台机器</p>
+            <div class="flex items-center space-x-2">
+                <button class="px-3 py-1 bg-slate-800 rounded text-sm text-slate-400 hover:text-white transition-colors disabled:opacity-50" disabled>上一页</button>
+                <button class="px-3 py-1 bg-emerald-500 rounded text-sm text-white">1</button>
+                <button class="px-3 py-1 bg-slate-800 rounded text-sm text-slate-400 hover:text-white transition-colors">2</button>
+                <button class="px-3 py-1 bg-slate-800 rounded text-sm text-slate-400 hover:text-white transition-colors">3</button>
+                <button class="px-3 py-1 bg-slate-800 rounded text-sm text-slate-400 hover:text-white transition-colors">下一页</button>
+            </div>
+        </div>
         {{else}}
-        <div class="text-center py-12">
-            <div class="text-6xl mb-4">💻</div>
-            <p class="text-slate-400 mb-2">No machines discovered yet</p>
-            <p class="text-sm text-slate-500">PXE boot a server to get started</p>
+        <div class="text-center py-16">
+            <svg class="w-16 h-16 mx-auto text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-slate-400 mb-2">暂无机器</h3>
+            <p class="text-slate-500 mb-4">PXE 启动服务器来发现新机器</p>
+            <button onclick="document.getElementById('discover-modal').classList.remove('hidden')"
+                class="btn-primary">
+                发现机器
+            </button>
         </div>
         {{end}}
     </div>
 </div>
-{{end}}
 
-{{define "content"}}
-{{template "content-machines" .}}
+<!-- Discover Modal -->
+<div id="discover-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="document.getElementById('discover-modal').classList.add('hidden')"></div>
+        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-md">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">发现新机器</h3>
+                <button onclick="document.getElementById('discover-modal').classList.add('hidden')" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form hx-post="/api/v1/machines/discover" hx-target="#machine-table-body" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">发现方式</label>
+                    <select name="method" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="dhcp">DHCP 监听</option>
+                        <option value="ip_range">IP 段扫描</option>
+                        <option value="pxe">PXE 启动</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">子网范围</label>
+                    <input type="text" name="ip_range" placeholder="192.168.1.0/24"
+                        class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 font-mono">
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="document.getElementById('discover-modal').classList.add('hidden')"
+                        class="btn-secondary">
+                        取消
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        开始发现
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Run Job Modal -->
+<div id="run-job-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="closeJobModal()"></div>
+        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">运行任务</h3>
+                <button onclick="closeJobModal()" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form hx-post="/api/v1/jobs" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">目标机器</label>
+                    <div class="flex items-center space-x-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg">
+                        <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p id="selected-machine-name" class="font-medium text-white">-</p>
+                            <p id="selected-machine-id" class="text-xs text-slate-500 font-mono">-</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="machine_id" name="machine_id" value="">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">任务类型</label>
+                    <select name="type" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="audit">硬件审计</option>
+                        <option value="config_raid">RAID 配置</option>
+                        <option value="install_os">操作系统安装</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">OS 配置文件</label>
+                    <select name="profile_id" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        <option value="">-- 选择配置文件 --</option>
+                        {{range .profiles}}
+                        <option value="{{.ID}}">{{.Name}} ({{.Distro}})</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeJobModal()" class="btn-secondary">
+                        取消
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        运行任务
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openJobModal(machineId, hostname) {
+    document.getElementById('machine_id').value = machineId;
+    document.getElementById('selected-machine-name').textContent = hostname;
+    document.getElementById('selected-machine-id').textContent = machineId;
+    document.getElementById('run-job-modal').classList.remove('hidden');
+}
+function closeJobModal() {
+    document.getElementById('run-job-modal').classList.add('hidden');
+}
+</script>
 {{end}}

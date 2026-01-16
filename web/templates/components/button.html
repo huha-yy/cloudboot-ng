@@ -1,48 +1,64 @@
-{{/* Button Component */}}
-
-{{/* Primary Button */}}
-{{define "btn-primary"}}
-<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
-        class="btn-primary {{.class}}"
-        {{if .disabled}}disabled{{end}}
-        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
-    {{.text}}
+{{define "button-primary"}}
+<button class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-md shadow-lg shadow-emerald-900/20 transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 {{if .class}}{{.class}}{{end}}"
+    {{if .type}}type="{{.type}}"{{end}}
+    {{if .disabled}}disabled{{end}}
+    {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    {{if .Icon}}
+    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {{.Icon}}
+    </svg>
+    {{end}}
+    {{.Label}}
 </button>
 {{end}}
 
-{{/* Secondary Button */}}
-{{define "btn-secondary"}}
-<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
-        class="btn-secondary {{.class}}"
-        {{if .disabled}}disabled{{end}}
-        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
-    {{.text}}
+{{define "button-secondary"}}
+<button class="inline-flex items-center justify-center px-4 py-2 bg-transparent border border-slate-600 hover:border-slate-500 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded-md transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-slate-500/50 {{if .class}}{{.class}}{{end}}"
+    {{if .type}}type="{{.type}}"{{end}}
+    {{if .disabled}}disabled{{end}}
+    {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    {{if .Icon}}
+    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {{.Icon}}
+    </svg>
+    {{end}}
+    {{.Label}}
 </button>
 {{end}}
 
-{{/* Ghost Button */}}
-{{define "btn-ghost"}}
-<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
-        class="btn-ghost {{.class}}"
-        {{if .disabled}}disabled{{end}}
-        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
-    {{.text}}
+{{define "button-danger"}}
+<button class="inline-flex items-center justify-center px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium rounded-md shadow-lg shadow-rose-900/20 transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-rose-500/50 {{if .class}}{{.class}}{{end}}"
+    {{if .type}}type="{{.type}}"{{end}}
+    {{if .disabled}}disabled{{end}}
+    {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    {{if .Icon}}
+    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {{.Icon}}
+    </svg>
+    {{end}}
+    {{.Label}}
 </button>
 {{end}}
 
-{{/* Destructive Button */}}
-{{define "btn-destructive"}}
-<button type="{{if .type}}{{.type}}{{else}}button{{end}}"
-        class="btn-destructive {{.class}}"
-        {{if .disabled}}disabled{{end}}
-        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
-    {{.text}}
+{{define "button-ai"}}
+<button class="inline-flex items-center justify-center px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-md shadow-lg shadow-violet-900/20 transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 {{if .class}}{{.class}}{{end}}"
+    {{if .type}}type="{{.type}}"{{end}}
+    {{if .disabled}}disabled{{end}}
+    {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+    </svg>
+    {{.Label}}
 </button>
 {{end}}
 
-{{/* Link Button */}}
-{{define "btn-link"}}
-<a href="{{.href}}" class="btn-primary {{.class}}">
-    {{.text}}
+{{define "button-link"}}
+<a href="{{.href}}" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-md shadow-lg shadow-emerald-900/20 transition-all duration-200 active:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 {{if .class}}{{.class}}{{end}}">
+    {{if .Icon}}
+    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {{.Icon}}
+    </svg>
+    {{end}}
+    {{.Label}}
 </a>
 {{end}}

@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/fs"
 	"path/filepath"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,6 +23,8 @@ func NewTemplateRenderer(templatesPath string) (*TemplateRenderer, error) {
 	funcMap := template.FuncMap{
 		"sub": func(a, b int) int { return a - b },
 		"add": func(a, b int) int { return a + b },
+		"mul": func(a, b int) int { return a * b },
+		"div": func(a, b int) int { if b == 0 { return 0 }; return a / b },
 		"eq":  func(a, b interface{}) bool { return a == b },
 		"len": func(v interface{}) int {
 			switch val := v.(type) {
@@ -89,6 +90,8 @@ func NewTemplateRendererFromFS(templateFS fs.FS) (*TemplateRenderer, error) {
 	funcMap := template.FuncMap{
 		"sub": func(a, b int) int { return a - b },
 		"add": func(a, b int) int { return a + b },
+		"mul": func(a, b int) int { return a * b },
+		"div": func(a, b int) int { if b == 0 { return 0 }; return a / b },
 		"eq":  func(a, b interface{}) bool { return a == b },
 		"len": func(v interface{}) int {
 			switch val := v.(type) {
@@ -174,17 +177,7 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 		return fmt.Errorf("template %s not found", name)
 	}
 
-	// Determine which template to execute
-	// If the page has a content-xxx block, execute base.html
-	// Otherwise, execute the page template directly
-	pageName := strings.TrimSuffix(name, ".html")
-	contentBlockName := "content-" + pageName
-
-	if tmpl.Lookup(contentBlockName) != nil {
-		// Execute base layout (which will call the content block)
-		return tmpl.ExecuteTemplate(w, "base.html", data)
-	}
-
-	// Execute the page template directly
-	return tmpl.ExecuteTemplate(w, name, data)
+	// Always execute base.html which will call the content block
+	// The content block is defined in each page template as {{define "content"}}
+	return tmpl.ExecuteTemplate(w, "base.html", data)
 }

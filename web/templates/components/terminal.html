@@ -1,85 +1,69 @@
-{{/* Terminal Component */}}
-
-{{/* Terminal Window */}}
 {{define "terminal"}}
-<div class="terminal {{.class}}">
-    {{if .showHeader}}
-    <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-800">
-        <div class="flex gap-1.5">
-            <div class="w-3 h-3 rounded-full bg-rose-500"></div>
-            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+<div class="w-full bg-black rounded-lg border border-slate-800 overflow-hidden font-mono text-sm shadow-inner {{if .class}}{{.class}}{{end}}">
+    <!-- Header with macOS-style dots -->
+    <div class="flex items-center px-4 py-2 bg-slate-900 border-b border-slate-800">
+        <div class="flex space-x-2">
+            <div class="w-3 h-3 rounded-full bg-rose-500/20 hover:bg-rose-500 transition-colors cursor-pointer"></div>
+            <div class="w-3 h-3 rounded-full bg-amber-500/20 hover:bg-amber-500 transition-colors cursor-pointer"></div>
             <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
         </div>
-        {{if .title}}
-        <span class="text-xs text-slate-400 ml-2">{{.title}}</span>
+        <div class="ml-4 text-xs text-slate-500">{{if .Title}}{{.Title}}{{else}}root@cloudboot-core: ~{{end}}</div>
+    </div>
+    <!-- Log Stream Area -->
+    <div id="{{if .ID}}{{.ID}}{{else}}log-container{{end}}"
+         class="p-4 h-64 overflow-y-auto scrollbar-thin {{if .class}}{{.class}}{{end}}"
+         {{if .JobID}}
+         hx-ext="sse"
+         sse-connect="/api/stream/logs/{{.JobID}}"
+         sse-swap="message"
+         hx-swap="beforeend"
+         x-data
+         x-init="$el.scrollTop = $el.scrollHeight"
+         {{end}}>
+        {{if .Logs}}
+        {{range .Logs}}
+        <div class="{{.Class}}">{{.Message}}</div>
+        {{end}}
+        {{else}}
+        <div class="text-emerald-500/90">> Initializing hardware probe...</div>
+        <div class="text-slate-300">> Found RAID Controller: LSI MegaRAID SAS 3108</div>
+        <div class="text-slate-300">> Scanning physical drives...</div>
+        <div class="text-amber-500">> Warning: Battery backup low</div>
+        <div class="text-emerald-500">> RAID configuration completed successfully</div>
         {{end}}
     </div>
-    {{end}}
-    <div class="p-4 font-mono text-sm {{if .maxHeight}}{{.maxHeight}}{{else}}max-h-96{{end}} overflow-y-auto">
-        {{.content}}
-    </div>
 </div>
 {{end}}
 
-{{/* Terminal Line */}}
-{{define "terminal-line"}}
-<div class="{{if .class}}{{.class}}{{end}}">
-    {{if .prompt}}
-    <span class="text-emerald-500">{{.prompt}}</span>
-    {{end}}
-    <span class="{{if .color}}{{.color}}{{else}}text-slate-300{{end}}">{{.text}}</span>
-</div>
-{{end}}
-
-{{/* Terminal with Live Stream (SSE) */}}
-{{define "terminal-stream"}}
-<div class="terminal {{.class}}"
-     x-data="{logs: [], isStreaming: false}"
-     x-init="
-        const eventSource = new EventSource('{{.endpoint}}');
-        isStreaming = true;
-        eventSource.onmessage = (event) => {
-            const log = JSON.parse(event.data);
-            logs.push(log);
-            $nextTick(() => {
-                $el.querySelector('.terminal-content').scrollTop = $el.querySelector('.terminal-content').scrollHeight;
-            });
-        };
-        eventSource.onerror = () => {
-            isStreaming = false;
-            eventSource.close();
-        };
-     ">
-    <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-800">
-        <div class="flex gap-1.5">
-            <div class="w-3 h-3 rounded-full bg-rose-500"></div>
-            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-        </div>
-        <span class="text-xs text-slate-400 ml-2">{{if .title}}{{.title}}{{else}}Live Logs{{end}}</span>
-        <div x-show="isStreaming" class="ml-auto">
-            <span class="dot-pulse"></span>
-            <span class="text-xs text-emerald-500 ml-2">Streaming</span>
-        </div>
-    </div>
-    <div class="terminal-content p-4 font-mono text-sm max-h-96 overflow-y-auto">
-        <template x-for="log in logs" :key="log.ts">
-            <div class="terminal-line">
-                <span class="text-slate-500" x-text="new Date(log.ts).toLocaleTimeString()"></span>
-                <span class="ml-2"
-                      :class="{
-                        'text-rose-500': log.level === 'ERROR',
-                        'text-amber-500': log.level === 'WARN',
-                        'text-emerald-500': log.level === 'INFO',
-                        'text-slate-500': log.level === 'DEBUG'
-                      }"
-                      x-text="`[${log.level}]`"></span>
-                <span class="text-slate-300 ml-2" x-text="log.msg"></span>
+{{define "terminal-live"}}
+<div class="w-full bg-black rounded-lg border border-slate-800 overflow-hidden font-mono text-sm shadow-inner {{if .class}}{{.class}}{{end}}"
+     x-data="{ autoScroll: true }">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800">
+        <div class="flex items-center">
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 rounded-full bg-rose-500/20"></div>
+                <div class="w-3 h-3 rounded-full bg-amber-500/20"></div>
+                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
             </div>
-        </template>
-        <div x-show="logs.length === 0" class="text-slate-500">
-            Waiting for logs...
+            <div class="ml-4 text-xs text-slate-500">Job: {{.JobID}}</div>
         </div>
+        <label class="flex items-center text-xs text-slate-500 cursor-pointer">
+            <input type="checkbox" x-model="autoScroll" class="sr-only peer">
+            <div class="relative w-8 h-4 bg-slate-700 rounded-full peer-checked:bg-emerald-600 transition-colors">
+                <div class="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+            </div>
+            <span class="ml-2">Auto-scroll</span>
+        </label>
+    </div>
+    <!-- Log Area with SSE -->
+    <div id="log-{{.JobID}}"
+         class="p-4 h-80 overflow-y-auto scrollbar-thin"
+         hx-ext="sse"
+         sse-connect="/api/stream/logs/{{.JobID}}"
+         sse-swap="message"
+         hx-swap="beforeend"
+         x-effect="if(autoScroll) { $el.scrollTop = $el.scrollHeight }">
     </div>
 </div>
 {{end}}

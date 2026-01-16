@@ -1,0 +1,234 @@
+{{define "content"}}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">系统仪表板</h1>
+            <p class="text-slate-400 mt-1">CloudBoot NG 系统概览与实时监控</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="badge badge-online">
+                <span class="dot-pulse mr-2"></span>
+                系统在线
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Machines -->
+        <div class="glass-card hover:border-emerald-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">物理机器</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.stats.machines}}</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Jobs -->
+        <div class="glass-card hover:border-violet-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">装机任务</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.stats.jobs}}</p>
+                </div>
+                <div class="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Profiles -->
+        <div class="glass-card hover:border-amber-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">OS 配置模板</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.stats.profiles}}</p>
+                </div>
+                <div class="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Uptime -->
+        <div class="glass-card hover:border-slate-500/30 transition-all">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">系统运行时间</p>
+                    <p class="text-3xl font-bold text-white mt-1">{{.monitor.uptime}}</p>
+                </div>
+                <div class="w-12 h-12 bg-slate-500/10 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Recent Activities -->
+        <div class="glass-card">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-white">最近活动</h3>
+                <a href="/jobs" class="text-sm text-slate-400 hover:text-white transition-colors">查看全部</a>
+            </div>
+            <div class="space-y-4">
+                {{range .recentJobs}}
+                <div class="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        {{if eq .Status "running"}}
+                        <div class="relative">
+                            <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <div class="absolute inset-0 w-2 h-2 bg-amber-500 rounded-full animate-ping"></div>
+                        </div>
+                        {{else if eq .Status "success"}}
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                        {{else if eq .Status "failed"}}
+                        <div class="w-2 h-2 bg-rose-500 rounded-full"></div>
+                        {{else}}
+                        <div class="w-2 h-2 bg-slate-500 rounded-full"></div>
+                        {{end}}
+                        <div>
+                            <p class="text-sm text-white">{{.Type}}</p>
+                            <p class="text-xs text-slate-500">{{if .Machine}}{{.Machine.Hostname}}{{else}}未知主机{{end}}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-500">{{.CreatedAt.Format "15:04"}}</p>
+                        <p class="text-xs text-slate-400">{{.CreatedAt.Format "01/02"}}</p>
+                    </div>
+                </div>
+                {{else}}
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 mx-auto text-slate-700 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <p class="text-slate-500">暂无最近活动</p>
+                </div>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="glass-card">
+            <h3 class="text-lg font-semibold text-white mb-6">系统健康状态</h3>
+            <div class="space-y-6">
+                <!-- Database Health -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-slate-400">数据库连接</span>
+                        {{if .monitor.dbHealthy}}
+                        <span class="badge badge-online">正常</span>
+                        {{else}}
+                        <span class="badge badge-error">异常</span>
+                        {{end}}
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5">
+                        <div class="{{if .monitor.dbHealthy}}bg-emerald-500{{else}}bg-rose-500{{end}} h-1.5 rounded-full" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <!-- Disk Usage -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-slate-400">磁盘使用率</span>
+                        <span class="text-sm text-slate-300">{{.monitor.diskUsage}}%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5">
+                        <div class="{{if gt .monitor.diskUsage 80}}bg-rose-500{{else if gt .monitor.diskUsage 60}}bg-amber-500{{else}}bg-emerald-500{{end}} h-1.5 rounded-full" style="width: {{.monitor.diskUsage}}%"></div>
+                    </div>
+                </div>
+
+                <!-- Memory Usage -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-slate-400">内存使用率</span>
+                        <span class="text-sm text-slate-300">{{.monitor.memoryUsage}}%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5">
+                        <div class="{{if gt .monitor.memoryUsage 80}}bg-rose-500{{else if gt .monitor.memoryUsage 60}}bg-amber-500{{else}}bg-emerald-500{{end}} h-1.5 rounded-full" style="width: {{.monitor.memoryUsage}}%"></div>
+                    </div>
+                </div>
+
+                <!-- CSPM Providers -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-slate-400">CSPM 驱动</span>
+                        {{if gt .providers.count 0}}
+                        <span class="badge badge-online">{{.providers.count}}个可用</span>
+                        {{else}}
+                        <span class="badge badge-offline">暂无</span>
+                        {{end}}
+                    </div>
+                    {{if gt .providers.count 0}}
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        {{range .providers.list}}
+                        <span class="px-2 py-1 bg-slate-800 text-xs text-slate-300 rounded font-mono">{{.Name}}</span>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="glass-card">
+        <h3 class="text-lg font-semibold text-white mb-6">快速操作</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="/machines" class="flex flex-col items-center justify-center p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors group">
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-emerald-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
+                    </svg>
+                </div>
+                <p class="text-sm font-medium text-white">管理机器</p>
+                <p class="text-xs text-slate-500 mt-1">纳管物理服务器</p>
+            </a>
+
+            <a href="/os-designer" class="flex flex-col items-center justify-center p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors group">
+                <div class="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-violet-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                </div>
+                <p class="text-sm font-medium text-white">OS设计器</p>
+                <p class="text-xs text-slate-500 mt-1">创建安装配置</p>
+            </a>
+
+            <a href="/store" class="flex flex-col items-center justify-center p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors group">
+                <div class="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-amber-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <p class="text-sm font-medium text-white">私有仓库</p>
+                <p class="text-xs text-slate-500 mt-1">管理CSPM驱动</p>
+            </a>
+
+            <a href="/settings" class="flex flex-col items-center justify-center p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors group">
+                <div class="w-12 h-12 bg-slate-500/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-slate-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-sm font-medium text-white">系统设置</p>
+                <p class="text-xs text-slate-500 mt-1">配置系统参数</p>
+            </a>
+        </div>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,161 @@
+{{define "content"}}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">系统设置</h1>
+            <p class="text-slate-400 mt-1">配置 CloudBoot NG 系统参数与全局选项</p>
+        </div>
+    </div>
+
+    <!-- Settings Navigation -->
+    <div class="glass-card mb-6">
+        <div class="flex space-x-1 p-1 bg-slate-800/50 rounded-lg" id="settings-tabs">
+            <button data-tab="general" class="settings-tab px-4 py-2 rounded-md text-sm font-medium transition-colors bg-slate-700 text-white">
+                常规设置
+            </button>
+            <button data-tab="network" class="settings-tab px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-400 hover:text-white">
+                网络配置
+            </button>
+            <button data-tab="storage" class="settings-tab px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-400 hover:text-white">
+                存储设置
+            </button>
+            <button data-tab="security" class="settings-tab px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-400 hover:text-white">
+                安全设置
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div>
+        <!-- General Settings -->
+        <div id="general-content" class="settings-content">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">系统信息</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">系统名称</label>
+                            <input type="text" value="CloudBoot NG" class="input">
+                            <p class="text-xs text-slate-500 mt-1">显示在页面标题和侧边栏的系统名称</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">版本</label>
+                            <div class="flex items-center">
+                                <span class="font-mono text-sm text-slate-300 bg-slate-800 px-3 py-2 rounded-lg">1.0.0-alpha</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">当前系统版本，不可修改</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Network Settings -->
+        <div id="network-content" class="settings-content hidden">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">网络配置</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">服务器IP地址</label>
+                            <input type="text" value="192.168.1.100" class="input font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">监听端口</label>
+                            <input type="number" value="8080" class="input">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Storage Settings -->
+        <div id="storage-content" class="settings-content hidden">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">存储配置</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">数据库路径</label>
+                            <input type="text" value="cloudboot.db" class="input font-mono">
+                            <p class="text-xs text-slate-500 mt-1">SQLite数据库文件路径</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security Settings -->
+        <div id="security-content" class="settings-content hidden">
+            <form class="space-y-6">
+                <div class="glass-card">
+                    <h3 class="text-lg font-semibold text-white mb-4">访问控制</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-300">启用身份验证</p>
+                                <p class="text-xs text-slate-500">需要用户名和密码访问系统</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="flex justify-end space-x-3 mt-12">
+        <button type="button" class="btn-secondary">重置</button>
+        <button type="submit" class="btn-primary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            保存设置
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.settings-tab');
+    const contents = document.querySelectorAll('.settings-content');
+    
+    function switchTab(tabName) {
+        // 更新标签按钮状态
+        tabs.forEach(tab => {
+            if (tab.dataset.tab === tabName) {
+                tab.classList.add('bg-slate-700', 'text-white');
+                tab.classList.remove('text-slate-400');
+            } else {
+                tab.classList.remove('bg-slate-700', 'text-white');
+                tab.classList.add('text-slate-400');
+            }
+        });
+        
+        // 更新内容显示
+        contents.forEach(content => {
+            if (content.id === tabName + '-content') {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+    }
+    
+    // 添加点击事件
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            switchTab(this.dataset.tab);
+        });
+    });
+    
+    // 默认显示常规设置
+    switchTab('general');
+});
+</script>
+{{end}}

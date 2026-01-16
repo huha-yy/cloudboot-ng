@@ -3,17 +3,23 @@ package api
 import (
 	"net/http"
 
+	"github.com/cloudboot/cloudboot-ng/internal/core/cspm"
 	"github.com/cloudboot/cloudboot-ng/internal/models"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/database"
+	"github.com/cloudboot/cloudboot-ng/internal/pkg/monitor"
 	"github.com/labstack/echo/v4"
 )
 
 // WebHandler handles web page rendering
-type WebHandler struct{}
+type WebHandler struct {
+	pluginManager *cspm.PluginManager
+}
 
 // NewWebHandler creates a new web handler
-func NewWebHandler() *WebHandler {
-	return &WebHandler{}
+func NewWebHandler(pm *cspm.PluginManager) *WebHandler {
+	return &WebHandler{
+		pluginManager: pm,
+	}
 }
 
 // OSDesignerPage renders the OS Designer page
@@ -136,9 +142,8 @@ func (h *WebHandler) JobsPage(c echo.Context) error {
 
 // StorePage renders the Private Store page
 func (h *WebHandler) StorePage(c echo.Context) error {
-	// Fetch providers from database
-	// For now, return empty list (will be implemented when Provider model is added)
-	providers := []interface{}{}
+	// Get providers from PluginManager
+	providers := h.pluginManager.ListProviders()
 
 	// Calculate stats
 	stats := struct {
@@ -146,12 +151,12 @@ func (h *WebHandler) StorePage(c echo.Context) error {
 		RaidProviders  int
 		BiosProviders  int
 	}{
-		TotalProviders: 0,
+		TotalProviders: len(providers),
 		RaidProviders:  0,
 		BiosProviders:  0,
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":           "Private Store",
 		"active":          "store",
 		"pageHeader":      "Provider Store",
@@ -174,18 +179,49 @@ func (h *WebHandler) HomePage(c echo.Context) error {
 	var recentJobs []models.Job
 	database.DB.Preload("Machine").Order("created_at DESC").Limit(10).Find(&recentJobs)
 
-	data := map[string]interface{}{
+	// Get system monitor stats
+	sysStats := monitor.GetStats()
+
+	// Get database health
+	dbHealthy := database.HealthCheck() == nil
+
+	// Get CSPM providers
+	providers := h.pluginManager.ListProviders()
+
+	data := map[string]any{
 		"title":  "Dashboard",
 		"active": "home",
-		"stats": map[string]interface{}{
+		"stats": map[string]any{
 			"machines": machineCount,
 			"jobs":     jobCount,
 			"profiles": profileCount,
 		},
 		"recentJobs": recentJobs,
+		"monitor": map[string]any{
+			"uptime":      sysStats.Uptime,
+			"diskUsage":   int(sysStats.DiskUsage),
+			"memoryUsage": int(sysStats.MemoryUsage),
+			"dbHealthy":   dbHealthy,
+		},
+		"providers": map[string]any{
+			"count": len(providers),
+			"list":  providers,
+		},
 	}
 
 	return c.Render(http.StatusOK, "home.html", data)
+}
+
+// SettingsPage renders the system settings page
+func (h *WebHandler) SettingsPage(c echo.Context) error {
+	data := map[string]interface{}{
+		"title":           "Settings",
+		"active":          "settings",
+		"pageHeader":      "System Settings",
+		"pageDescription": "Configure CloudBoot NG system parameters and global options",
+	}
+
+	return c.Render(http.StatusOK, "settings.html", data)
 }
 
 // DesignSystemPage renders the design system showcase page

@@ -10,6 +10,7 @@ import (
 	"github.com/cloudboot/cloudboot-ng/internal/core/cspm"
 	"github.com/cloudboot/cloudboot-ng/internal/core/logbroker"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/database"
+	"github.com/cloudboot/cloudboot-ng/internal/pkg/monitor"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/renderer"
 	"github.com/cloudboot/cloudboot-ng/web"
 	"github.com/labstack/echo/v4"
@@ -50,6 +51,10 @@ func main() {
 		log.Fatalf("❌ 数据库初始化失败: %v", err)
 	}
 	defer database.Close()
+
+	// 初始化系统监控
+	monitor.Init()
+	log.Println("✅ 系统监控初始化完成")
 
 	// 初始化LogBroker
 	broker := logbroker.NewBroker()
@@ -141,7 +146,7 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 	streamHandler := api.NewStreamHandler(broker)
 	profileHandler := api.NewProfileHandler()
 	storeHandler := api.NewStoreHandler(pluginManager)
-	webHandler := api.NewWebHandler()
+	webHandler := api.NewWebHandler(pluginManager)
 
 	// 健康检查
 	e.GET("/health", func(c echo.Context) error {
@@ -160,58 +165,18 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 		})
 	})
 
-	// 主页
-	e.GET("/", func(c echo.Context) error {
-		return c.HTML(200, `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloudBoot NG</title>
-    <link href="/static/css/output.css" rel="stylesheet">
-</head>
-<body>
-    <div class="flex items-center justify-center min-h-screen">
-        <div class="glass-card p-8 max-w-2xl">
-            <h1 class="text-4xl font-bold text-white mb-4">CloudBoot NG</h1>
-            <p class="text-slate-400 mb-6">The Terraform for Bare Metal & Digital Visa Officer for Infrastructure</p>
-
-            <div class="space-y-4">
-                <div>
-                    <span class="badge badge-online">
-                        <span class="dot-pulse mr-2"></span>
-                        System Online
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="/machines" class="btn-primary">💻 Machines</a>
-                    <a href="/os-designer" class="btn-primary">🎨 OS Designer</a>
-                    <a href="/design-system" class="btn-ghost">🎨 Design System</a>
-                    <a href="/api/docs" class="btn-ghost">📚 API Docs</a>
-                </div>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-slate-800">
-                <p class="text-xs text-slate-500">Version: `+AppVersion+`</p>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-		`)
-	})
 
 	// Design System 页面
 	e.GET("/design-system", webHandler.DesignSystemPage)
 
 	// Frontend Pages
+	e.GET("/", webHandler.HomePage)
 	e.GET("/machines", webHandler.MachinesPage)
 	e.GET("/jobs", webHandler.JobsPage)
 	e.GET("/jobs/:job_id/logs", jobLogsPageHandler)
 	e.GET("/os-designer", webHandler.OSDesignerPage)
 	e.GET("/store", webHandler.StorePage)
+	e.GET("/settings", webHandler.SettingsPage)
 
 	// Boot API (Agent ↔ Core)
 	bootAPI := e.Group("/api/boot/v1")
