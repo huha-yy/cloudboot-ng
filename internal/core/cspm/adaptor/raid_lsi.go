@@ -1,13 +1,10 @@
 package adaptor
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
