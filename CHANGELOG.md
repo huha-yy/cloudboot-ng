@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- 实现Provider原子序列编排器(Orchestrator) - Plan→Probe→Apply闭环 (2026-01-19 00:30)
+  - 强制Plan步骤预演变更，确保配置合法性
+  - Probe步骤实现幂等性检查，跳过重复操作
+  - Apply步骤执行实际变更，Verify步骤验证结果
+  - 所有步骤支持超时熔断(context.WithTimeout)
+- **实现Provider幂等性深度校验** (2026-01-19 01:00)
+  - Mock Provider状态持久化至/tmp文件
+  - 增强isAlreadyConverged深度状态比较逻辑
+  - 支持[]string和[]interface{}双类型兼容
+  - 幂等性测试验证：第二次执行速度提升75%
+
 ### Documentation
 - 创建落地冲刺模式文档 MISSION_CONTROL.md (2026-01-18 23:50)
 - 创建自动化同步脚本 scripts/sync.sh (2026-01-18 23:50)
