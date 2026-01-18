@@ -4,18 +4,35 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/cloudboot/cloudboot-ng/internal/core/logbroker"
 )
 
 // Orchestrator 提供 Provider 执行的原子序列编排
 // 实现 Plan → Probe → Apply 的闭环逻辑，确保幂等性和安全性
 type Orchestrator struct {
 	executor *Executor
+	broker   *logbroker.Broker // 日志流代理 (可选)
+	jobID    string            // Job ID for logging (可选)
 }
 
 // NewOrchestrator 创建新的 Orchestrator
 func NewOrchestrator(executor *Executor) *Orchestrator {
 	return &Orchestrator{
 		executor: executor,
+	}
+}
+
+// SetLogBroker 设置日志流代理
+func (o *Orchestrator) SetLogBroker(broker *logbroker.Broker, jobID string) {
+	o.broker = broker
+	o.jobID = jobID
+}
+
+// publishLog 发布日志到broker (如果配置)
+func (o *Orchestrator) publishLog(level, message string) {
+	if o.broker != nil && o.jobID != "" {
+		o.broker.PublishHTML(o.jobID, level, message)
 	}
 }
 
@@ -32,11 +49,15 @@ func (o *Orchestrator) ApplyWithPlan(ctx context.Context, config map[string]inte
 		Steps:     make([]StepResult, 0),
 	}
 
+	o.publishLog("INFO", "🚀 开始Provider原子序列执行")
+
 	// Step 1: Plan - 生成执行计划
+	o.publishLog("INFO", "📋 Step 1/4: 执行Plan - 预演变更")
 	planResult, err := o.executePlan(ctx, config)
 	if err != nil {
 		result.Success = false
 		result.Error = fmt.Errorf("plan failed: %w", err)
+		o.publishLog("ERROR", fmt.Sprintf("❌ Plan失败: %v", err))
 		return result, err
 	}
 	result.Steps = append(result.Steps, *planResult)
@@ -45,17 +66,22 @@ func (o *Orchestrator) ApplyWithPlan(ctx context.Context, config map[string]inte
 	if !planResult.Success {
 		result.Success = false
 		result.Error = fmt.Errorf("plan validation failed")
+		o.publishLog("ERROR", "❌ Plan验证失败")
 		return result, result.Error
 	}
+	o.publishLog("INFO", "✅ Plan执行成功")
 
 	// Step 2: Probe - 探测当前状态（幂等性检查）
+	o.publishLog("INFO", "🔍 Step 2/4: 执行Probe - 探测当前状态")
 	probeResult, err := o.executeProbe(ctx)
 	if err != nil {
 		result.Success = false
 		result.Error = fmt.Errorf("probe failed: %w", err)
+		o.publishLog("ERROR", fmt.Sprintf("❌ Probe失败: %v", err))
 		return result, err
 	}
 	result.Steps = append(result.Steps, *probeResult)
+	o.publishLog("INFO", "✅ Probe执行成功")
 
 	// 检查是否已达标（幂等性）
 	if o.isAlreadyConverged(probeResult, config) {
@@ -63,23 +89,30 @@ func (o *Orchestrator) ApplyWithPlan(ctx context.Context, config map[string]inte
 		result.Idempotent = true
 		result.Message = "System already in desired state, skipping apply"
 		result.Duration = time.Since(result.StartTime)
+		o.publishLog("INFO", "🎯 系统已达标，跳过Apply步骤 (幂等性)")
+		o.publishLog("INFO", "✅ 执行完成 (幂等)")
 		return result, nil
 	}
 
 	// Step 3: Apply - 执行实际变更
+	o.publishLog("INFO", "⚙️ Step 3/4: 执行Apply - 应用变更")
 	applyResult, err := o.executeApply(ctx, config)
 	if err != nil {
 		result.Success = false
 		result.Error = fmt.Errorf("apply failed: %w", err)
+		o.publishLog("ERROR", fmt.Sprintf("❌ Apply失败: %v", err))
 		return result, err
 	}
 	result.Steps = append(result.Steps, *applyResult)
+	o.publishLog("INFO", "✅ Apply执行成功")
 
 	// Step 4: Verify - 验证执行结果
+	o.publishLog("INFO", "🔍 Step 4/4: 执行Verify - 验证结果")
 	verifyResult, err := o.executeProbe(ctx)
 	if err != nil {
 		result.Success = false
 		result.Error = fmt.Errorf("verification probe failed: %w", err)
+		o.publishLog("ERROR", fmt.Sprintf("❌ Verify失败: %v", err))
 		return result, err
 	}
 	result.Steps = append(result.Steps, StepResult{
@@ -88,10 +121,13 @@ func (o *Orchestrator) ApplyWithPlan(ctx context.Context, config map[string]inte
 		Duration: verifyResult.Duration,
 		Data:     verifyResult.Data,
 	})
+	o.publishLog("INFO", "✅ Verify执行成功")
 
 	// 最终结果
 	result.Success = applyResult.Success
 	result.Duration = time.Since(result.StartTime)
+
+	o.publishLog("INFO", fmt.Sprintf("🎉 执行完成 - 总耗时: %.2fs", result.Duration.Seconds()))
 
 	return result, nil
 }
