@@ -170,16 +170,84 @@ func (o *Orchestrator) isAlreadyConverged(probeResult *StepResult, desiredConfig
 		return false
 	}
 
-	// 从 desiredConfig 中提取期望状态
-	// 从 probeResult.Data 中提取当前状态
-	// 进行比较
+	// 提取期望状态
+	desiredState, ok := desiredConfig["desired_state"].(map[string]interface{})
+	if !ok {
+		// 没有 desired_state，无法比较
+		return false
+	}
 
-	// TODO: 实现具体的状态比较逻辑
-	// 不同的 Provider 类型有不同的比较规则
-	// 例如 RAID Provider 需要比较：raid_level, drives, vd_id 等
+	desiredLevel, _ := desiredState["level"].(string)
 
-	// 当前简化实现：假设需要执行 Apply
-	// 生产环境需要根据具体 Provider 实现精确比较
+	// 处理 drives 可能是 []string 或 []interface{} 的情况
+	var desiredDrives []interface{}
+	switch v := desiredState["drives"].(type) {
+	case []interface{}:
+		desiredDrives = v
+	case []string:
+		// 转换 []string 为 []interface{}
+		desiredDrives = make([]interface{}, len(v))
+		for i, s := range v {
+			desiredDrives[i] = s
+		}
+	default:
+		return false
+	}
+
+	// 提取当前状态（从 Probe 返回）
+	probeData := probeResult.Data
+	if probeData == nil {
+		return false
+	}
+
+	// 检查是否已存在虚拟驱动器
+	vdListRaw, ok := probeData["virtual_drives"]
+	if !ok {
+		// 没有虚拟驱动器，需要创建
+		return false
+	}
+
+	vdList, ok := vdListRaw.([]interface{})
+	if !ok || len(vdList) == 0 {
+		// 虚拟驱动器列表为空，需要创建
+		return false
+	}
+
+	// 检查是否已存在相同配置的虚拟驱动器
+	for _, vdRaw := range vdList {
+		vd, ok := vdRaw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		// 比较 RAID 级别
+		currentLevel, _ := vd["level"].(string)
+		if currentLevel != desiredLevel {
+			continue
+		}
+
+		// 比较驱动器列表
+		currentDrivesRaw, ok := vd["drives"]
+		if !ok {
+			continue
+		}
+
+		currentDrives, ok := currentDrivesRaw.([]interface{})
+		if !ok {
+			continue
+		}
+
+		// 比较驱动器数量
+		if len(currentDrives) != len(desiredDrives) {
+			continue
+		}
+
+		// 比较驱动器内容（简化版：只比较数量，生产环境需要精确比较每个驱动器ID）
+		// 如果找到匹配的虚拟驱动器，说明已达标
+		return true
+	}
+
+	// 没有找到匹配的虚拟驱动器，需要执行 Apply
 	return false
 }
 

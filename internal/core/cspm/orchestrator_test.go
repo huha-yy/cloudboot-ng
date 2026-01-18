@@ -2,12 +2,16 @@ package cspm
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 )
 
 // TestOrchestratorApplyWithPlan 测试完整的原子序列执行
 func TestOrchestratorApplyWithPlan(t *testing.T) {
+	// 清理状态文件，确保测试从干净状态开始
+	os.Remove("/tmp/cloudboot-provider-mock-state.json")
+
 	// 使用 Mock Provider
 	executor := NewExecutor("../../../cmd/provider-mock/provider-mock")
 	executor.SetTimeout(10 * time.Second)
@@ -63,14 +67,82 @@ func TestOrchestratorApplyWithPlan(t *testing.T) {
 	t.Logf("Success: %v, Idempotent: %v", result.Success, result.Idempotent)
 }
 
-// TestOrchestratorIdempotency 测试幂等性（暂时跳过，因为需要Mock Provider支持状态检查）
+// TestOrchestratorIdempotency 测试幂等性
 func TestOrchestratorIdempotency(t *testing.T) {
-	t.Skip("Idempotency check requires Mock Provider to support state comparison")
+	// 清理状态文件，确保测试从干净状态开始
+	os.Remove("/tmp/cloudboot-provider-mock-state.json")
 
-	// TODO: 实现完整的幂等性测试
-	// 1. 第一次执行 ApplyWithPlan，创建 RAID
-	// 2. 第二次执行 ApplyWithPlan，期望检测到已达标，跳过 Apply
-	// 3. 验证 result.Idempotent == true
+	// 使用 Mock Provider
+	executor := NewExecutor("../../../cmd/provider-mock/provider-mock")
+	executor.SetTimeout(15 * time.Second) // 延长超时，因为需要执行两次
+
+	orchestrator := NewOrchestrator(executor)
+
+	config := map[string]interface{}{
+		"desired_state": map[string]interface{}{
+			"level":  "10",
+			"drives": []string{"0:0", "0:1", "0:2", "0:3"},
+		},
+	}
+
+	ctx := context.Background()
+
+	// 第一次执行：应该创建 RAID
+	t.Log("First execution: should create RAID")
+	result1, err := orchestrator.ApplyWithPlan(ctx, config)
+	if err != nil {
+		t.Fatalf("First ApplyWithPlan failed: %v", err)
+	}
+
+	if !result1.Success {
+		t.Errorf("First execution should succeed")
+		if failedStep := result1.GetFailedStep(); failedStep != nil {
+			t.Logf("Failed step: %s", failedStep.Name)
+		}
+	}
+
+	if result1.Idempotent {
+		t.Errorf("First execution should NOT be idempotent (should apply changes)")
+	}
+
+	t.Logf("First execution: Success=%v, Idempotent=%v, Duration=%v",
+		result1.Success, result1.Idempotent, result1.Duration)
+
+	// 第二次执行：应该检测到已达标，跳过 Apply
+	t.Log("Second execution: should detect convergence and skip apply")
+	result2, err := orchestrator.ApplyWithPlan(ctx, config)
+	if err != nil {
+		t.Fatalf("Second ApplyWithPlan failed: %v", err)
+	}
+
+	if !result2.Success {
+		t.Errorf("Second execution should succeed")
+		if failedStep := result2.GetFailedStep(); failedStep != nil {
+			t.Logf("Failed step: %s", failedStep.Name)
+		}
+	}
+
+	// 关键验证：第二次应该是幂等的
+	if !result2.Idempotent {
+		t.Errorf("Second execution should be idempotent (system already converged)")
+	}
+
+	// 验证第二次执行跳过了 Apply 步骤
+	// 应该只有 Plan 和 Probe，没有 Apply 和 Verify
+	expectedSteps := []string{"plan", "probe"}
+	if len(result2.Steps) != len(expectedSteps) {
+		t.Errorf("Second execution should have %d steps (no apply/verify), got %d",
+			len(expectedSteps), len(result2.Steps))
+	}
+
+	t.Logf("Second execution: Success=%v, Idempotent=%v, Duration=%v, Steps=%d",
+		result2.Success, result2.Idempotent, result2.Duration, len(result2.Steps))
+
+	// 验证第二次执行速度更快（因为跳过了 Apply）
+	if result2.Duration >= result1.Duration {
+		t.Logf("Warning: Second execution (%v) should be faster than first (%v)",
+			result2.Duration, result1.Duration)
+	}
 }
 
 // TestOrchestratorPlanFailure 测试 Plan 失败时的行为
