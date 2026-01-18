@@ -339,17 +339,47 @@ if execResult.Success {
 
 ---
 
-## 📚 核心文档
+## 📚 文档导航
 
+### 核心文档（根目录）
 | 文档 | 描述 | 路径 |
 |------|------|------|
-| **CLAUDE.md** | 开发指南（给AI Agent的） | [CLAUDE.md](CLAUDE.md) |
-| **架构设计** | 系统架构和CSPM协议 | [docs/design/ARCHITECTURE.md](docs/design/ARCHITECTURE.md) |
-| **API规范** | OpenAPI 3.0规范 | [docs/api/API-SPEC.yaml](docs/api/API-SPEC.yaml) |
-| **CSPM实施报告** | 第四卷实现详情 ⭐ NEW | [CSPM_VOLUME4_FINAL_REPORT.md](CSPM_VOLUME4_FINAL_REPORT.md) |
-| **任务分解** | 7个Phase开发计划 | [docs/dev/TASK-BREAKDOWN.md](docs/dev/TASK-BREAKDOWN.md) |
-| **测试计划** | 测试范围和准出标准 | [docs/test/TEST-PLAN.md](docs/test/TEST-PLAN.md) |
-| **实施报告** | 全项目进度总结 | [IMPLEMENTATION_REPORT.md](IMPLEMENTATION_REPORT.md) |
+| **README.md** | 项目概览和快速开始 | [README.md](README.md) |
+| **CLAUDE.md** | AI开发指南 | [CLAUDE.md](CLAUDE.md) |
+| **TODO.md** | 当前任务追踪 | [TODO.md](TODO.md) |
+| **待人类确认.md** | 待确认的技术决策 | [待人类确认.md](待人类确认.md) |
+
+### 规格文档（spec/）
+| 文档 | 描述 | 路径 |
+|------|------|------|
+| **PROJECT_Manifest** | 项目核心原则 | [spec/PROJECT_Manifest.md](spec/PROJECT_Manifest.md) |
+| **ARCH_Stack** | 技术栈选型 | [spec/ARCH_Stack.md](spec/ARCH_Stack.md) |
+| **DATA_Schema** | 数据模型定义 | [spec/DATA_Schema.md](spec/DATA_Schema.md) |
+| **CSPM_Protocol** | CSPM协议规范 | [spec/CSPM_Protocol.md](spec/CSPM_Protocol.md) |
+| **UI_Design_System** | UI设计系统 | [spec/UI_Design_System.md](spec/UI_Design_System.md) |
+
+### 指引文档（docs/guides/）
+| 文档 | 描述 | 路径 |
+|------|------|------|
+| **开发指引** | Elite Dev Team生成的完整开发指引 | [docs/guides/开发指引.md](docs/guides/开发指引.md) |
+| **项目全面说明** | 项目全面说明文档 | [docs/guides/项目全面说明.md](docs/guides/项目全面说明.md) |
+
+### 实施报告（docs/reports/）
+| 文档 | 描述 | 路径 |
+|------|------|------|
+| **交付报告** | 项目交付总结 | [docs/reports/delivery.md](docs/reports/delivery.md) |
+| **Phase 1-6实施报告** | 前6个Phase实施详情 | [docs/reports/implementation/phase-1-6.md](docs/reports/implementation/phase-1-6.md) |
+| **Phase 3实施报告** | Phase 3实施详情 | [docs/reports/implementation/phase-3.md](docs/reports/implementation/phase-3.md) |
+| **Phase 3-6实施报告** | Phase 3-6实施详情 | [docs/reports/implementation/phase-3-6.md](docs/reports/implementation/phase-3-6.md) |
+| **增量报告** | 增量开发报告 | [docs/reports/implementation/incremental.md](docs/reports/implementation/incremental.md) |
+| **CSPM Volume 4实施报告** | CSPM机制实施详情 ⭐ | [docs/reports/cspm/volume4-implementation.md](docs/reports/cspm/volume4-implementation.md) |
+| **CSPM Volume 4最终报告** | CSPM机制最终报告 ⭐ | [docs/reports/cspm/volume4-final.md](docs/reports/cspm/volume4-final.md) |
+
+### 校验记录（docs/reviews/）
+| 文档 | 描述 | 路径 |
+|------|------|------|
+| **iFlow审计** | iFlow对标校验记录 | [docs/reviews/iflow-audit.md](docs/reviews/iflow-audit.md) |
+| **前端审计** | 前端对标校验记录 | [docs/reviews/frontend-audit.md](docs/reviews/frontend-audit.md) |
 
 ---
 
@@ -623,7 +653,7 @@ if execResult.Success {
 - **项目主页**: https://github.com/yourorg/cloudboot-ng
 - **问题反馈**: https://github.com/yourorg/cloudboot-ng/issues
 - **文档中心**: [docs/](docs/)
-- **CSPM实施报告**: [CSPM_VOLUME4_FINAL_REPORT.md](CSPM_VOLUME4_FINAL_REPORT.md)
+- **CSPM实施报告**: [docs/reports/cspm/volume4-final.md](docs/reports/cspm/volume4-final.md)
 
 ---
 
