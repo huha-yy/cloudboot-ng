@@ -10,6 +10,7 @@ type Job struct {
 	MachineID   string    `gorm:"index;column:machine_id" json:"machine_id"`
 	Type        JobType   `gorm:"type:varchar(50)" json:"type"`
 	Status      JobStatus `gorm:"type:varchar(20);index" json:"status"`
+	ProfileID   string    `gorm:"type:varchar(36);index" json:"profile_id"` // OS Profile ID (for install_os jobs)
 	StepCurrent string    `gorm:"type:varchar(100)" json:"step_current"`
 	LogsPath    string    `gorm:"type:varchar(255)" json:"logs_path"`
 	Error       string    `gorm:"type:text" json:"error,omitempty"`
@@ -17,7 +18,8 @@ type Job struct {
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// 关联
-	Machine *Machine `gorm:"foreignKey:MachineID" json:"machine,omitempty"`
+	Machine *Machine   `gorm:"foreignKey:MachineID" json:"machine,omitempty"`
+	Profile *OSProfile `gorm:"foreignKey:ProfileID" json:"profile,omitempty"`
 }
 
 // JobType 任务类型枚举

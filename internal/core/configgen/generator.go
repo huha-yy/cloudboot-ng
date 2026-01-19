@@ -70,7 +70,7 @@ func (g *Generator) prepareTemplateData(profile *models.OSProfile) map[string]in
 	return map[string]interface{}{
 		"Profile":    profile,
 		"Partitions": profile.Config.Partitions,
-		"Network":    profile.Config.Network,
+		"Network":    profile.Config.NetworkConfig,
 		"Packages":   profile.Config.Packages,
 		"PostScript": profile.Config.PostScript,
 		"RepoURL":    profile.Config.RepoURL,

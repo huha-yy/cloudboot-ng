@@ -3,7 +3,7 @@ package configgen
 import (
 	"fmt"
 	"net"
-	"strings"
+	// "strings"
 
 	"github.com/cloudboot/cloudboot-ng/internal/models"
 )
@@ -25,8 +25,10 @@ func (g *Generator) Validate(profile *models.OSProfile) error {
 	}
 
 	// 验证网络配置
-	if err := validateNetwork(&profile.Config.Network); err != nil {
-		return err
+	if profile.Config.NetworkConfig != nil {
+		if err := validateNetwork(profile.Config.NetworkConfig); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -51,7 +53,7 @@ func validateOSType(osType string) error {
 }
 
 // validatePartitions 验证分区配置
-func validatePartitions(partitions []models.Partition) error {
+func validatePartitions(partitions []models.PartitionConfig) error {
 	if len(partitions) == 0 {
 		return fmt.Errorf("no partitions defined")
 	}
@@ -65,26 +67,23 @@ func validatePartitions(partitions []models.Partition) error {
 		}
 
 		// 检查文件系统类型
-		if part.FSType == "" {
+		if part.FileSystem == "" {
 			return fmt.Errorf("partition %d: filesystem type is empty", i)
 		}
 
-		// 检查大小 (简化版本：只检查非空)
-		if part.Size == "" {
-			return fmt.Errorf("partition %d: size is empty", i)
-		}
+		// Size validation: SizeMB is int, 0 is valid for grow partitions
 
 		// 标记关键分区
 		if part.MountPoint == "/" {
 			hasRoot = true
 		}
 
-		if part.MountPoint == "swap" && part.FSType != "swap" {
-			return fmt.Errorf("swap partition must have fstype=swap, got %s", part.FSType)
+		if part.MountPoint == "swap" && part.FileSystem != "swap" {
+			return fmt.Errorf("swap partition must have fstype=swap, got %s", part.FileSystem)
 		}
 
 		// 验证文件系统类型
-		if err := validateFilesystem(part.FSType, part.MountPoint); err != nil {
+		if err := validateFilesystem(part.FileSystem, part.MountPoint); err != nil {
 			return fmt.Errorf("partition %d: %w", i, err)
 		}
 	}
@@ -120,53 +119,38 @@ func validateFilesystem(fstype, mount string) error {
 }
 
 // validateNetwork 验证网络配置
-func validateNetwork(network *models.NetworkConfig) error {
+func validateNetwork(network *models.NetworkConfigDetail) error {
 	if network == nil {
-		return fmt.Errorf("network configuration is required")
+		// 网络配置是可选的
+		return nil
 	}
 
-	// 验证主机名
-	if network.Hostname == "" {
-		return fmt.Errorf("hostname is required")
-	}
-
-	if len(network.Hostname) > 63 {
-		return fmt.Errorf("hostname too long (max 63 characters)")
-	}
-
-	// 验证IP地址
-	if network.IP == "" {
-		return fmt.Errorf("IP address is required")
-	}
-
-	ip := net.ParseIP(network.IP)
-	if ip == nil {
-		return fmt.Errorf("invalid IP address: %s", network.IP)
-	}
-
-	// 验证子网掩码
-	if network.Netmask == "" {
-		return fmt.Errorf("netmask is required")
-	}
-
-	if !isValidNetmask(network.Netmask) {
-		return fmt.Errorf("invalid netmask: %s", network.Netmask)
-	}
-
-	// 验证网关
-	if network.Gateway != "" {
-		gw := net.ParseIP(network.Gateway)
-		if gw == nil {
-			return fmt.Errorf("invalid gateway address: %s", network.Gateway)
+	// 如果是静态IP，验证必填字段
+	if network.BootProto == "static" {
+		if network.IPAddress == "" {
+			return fmt.Errorf("IP address is required for static network")
 		}
-	}
 
-	// 验证DNS
-	if len(network.DNS) > 0 {
-		for _, dns := range network.DNS {
-			dns = strings.TrimSpace(dns)
-			if net.ParseIP(dns) == nil {
-				return fmt.Errorf("invalid DNS server address: %s", dns)
+		ip := net.ParseIP(network.IPAddress)
+		if ip == nil {
+			return fmt.Errorf("invalid IP address: %s", network.IPAddress)
+		}
+
+		if network.Netmask == "" {
+			return fmt.Errorf("netmask is required for static network")
+		}
+
+		if network.Gateway != "" {
+			gw := net.ParseIP(network.Gateway)
+			if gw == nil {
+				return fmt.Errorf("invalid gateway address: %s", network.Gateway)
+			}
+		}
+
+		if network.DNS != "" {
+			dns := net.ParseIP(network.DNS)
+			if dns == nil {
+				return fmt.Errorf("invalid DNS server address: %s", network.DNS)
 			}
 		}
 	}

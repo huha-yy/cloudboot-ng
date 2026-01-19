@@ -168,6 +168,8 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 	jobHandler := api.NewJobHandler()
 	bootHandler := api.NewBootHandler(broker)
 	agentHandler := api.NewAgentHandler() // 新增：标准Agent硬件上报协议
+	pxeHandler := api.NewPXEHandler(getEnv("SERVER_URL", "http://localhost:8080")) // 新增：PXE/iPXE启动
+	bootConfigHandler := api.NewBootConfigHandler(getEnv("SERVER_URL", "http://localhost:8080")) // 新增：Boot配置
 	streamHandler := api.NewStreamHandler(broker)
 	demoHandler := api.NewDemoHandler(broker)
 	profileHandler := api.NewProfileHandler()
@@ -218,6 +220,18 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 		bootAPI.GET("/task", bootHandler.GetTask)
 		bootAPI.POST("/logs", bootHandler.UploadLogs)
 		bootAPI.POST("/status", bootHandler.ReportStatus)
+	}
+
+	// PXE/iPXE Boot (裸机网络启动)
+	bootGroup := e.Group("/boot")
+	{
+		// iPXE启动脚本（HTTP Boot）
+		bootGroup.GET("/ipxe/:mac", pxeHandler.ServeiPXEScript)
+
+		// OS安装配置文件
+		bootGroup.GET("/kickstart/:machine_id", bootConfigHandler.ServeKickstart)   // RHEL/CentOS
+		bootGroup.GET("/autoyast/:machine_id", bootConfigHandler.ServeAutoYaST)     // SUSE/openSUSE
+		// TODO: Ubuntu Autoinstall, Debian Preseed
 	}
 
 	// External API

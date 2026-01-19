@@ -1,0 +1,114 @@
+#!ipxe
+###############################################################################
+# CloudBoot NG - iPXE Boot Script
+# Generated for: {{.Hostname}} ({{.MacAddress}})
+# Machine ID: {{.MachineID}}
+# Boot Mode: {{.BootMode}}
+###############################################################################
+
+# Set console output
+console --picture --left 100 --right 80
+
+# Display banner
+echo
+echo ========================================================================
+echo   CloudBoot NG - The Terraform for Bare Metal
+echo   Machine: {{.Hostname}} | MAC: {{.MacAddress}}
+echo ========================================================================
+echo
+
+# Configuration
+set server-url {{.ServerURL}}
+set machine-id {{.MachineID}}
+
+{{if eq .BootMode "discovery"}}
+###############################################################################
+# Discovery Mode - Boot into BootOS for hardware discovery
+###############################################################################
+echo [INFO] Booting into Discovery Mode...
+echo [INFO] Loading BootOS kernel and initrd...
+
+set kernel-url ${server-url}/boot/images/bootos-kernel
+set initrd-url ${server-url}/boot/images/bootos-initrd
+set kernel-params ip=dhcp cloudboot.server=${server-url} cloudboot.mac={{.MacAddress}} cloudboot.mode=discovery
+
+kernel ${kernel-url} ${kernel-params} || goto failed
+initrd ${initrd-url} || goto failed
+boot || goto failed
+
+{{else if eq .BootMode "install"}}
+###############################################################################
+# Install Mode - Boot installer for OS installation
+###############################################################################
+echo [INFO] Booting into Install Mode...
+echo [INFO] Target OS: {{.OSProfile.Distro}} {{.OSProfile.Version}}
+echo [INFO] Loading installer kernel and initrd...
+
+{{if or (eq .OSProfile.Distro "centos") (eq .OSProfile.Distro "centos7") (eq .OSProfile.Distro "centos8") (eq .OSProfile.Distro "rhel") (eq .OSProfile.Distro "rhel7") (eq .OSProfile.Distro "rhel8") (eq .OSProfile.Distro "rhel9") (eq .OSProfile.Distro "rocky") (eq .OSProfile.Distro "rocky8") (eq .OSProfile.Distro "rocky9") (eq .OSProfile.Distro "alma") (eq .OSProfile.Distro "alma8") (eq .OSProfile.Distro "alma9")}}
+# CentOS/RHEL Installer
+set kernel-url {{.OSProfile.KernelURL}}
+set initrd-url {{.OSProfile.InitrdURL}}
+set ks-url ${server-url}/boot/kickstart/{{.MachineID}}
+set kernel-params ip=dhcp inst.ks=${ks-url} inst.repo={{.OSProfile.RepoURL}} console=tty0 console=ttyS0,115200n8
+
+{{else if or (eq .OSProfile.Distro "ubuntu") (eq .OSProfile.Distro "ubuntu20") (eq .OSProfile.Distro "ubuntu22") (eq .OSProfile.Distro "ubuntu24")}}
+# Ubuntu Installer
+set kernel-url {{.OSProfile.KernelURL}}
+set initrd-url {{.OSProfile.InitrdURL}}
+set autoinstall-url ${server-url}/boot/autoinstall/{{.MachineID}}
+set kernel-params ip=dhcp url={{.OSProfile.RepoURL}} autoinstall ds=nocloud-net;s=${autoinstall-url}/ console=tty0 console=ttyS0,115200n8
+
+{{else if or (eq .OSProfile.Distro "suse") (eq .OSProfile.Distro "suse15") (eq .OSProfile.Distro "sles") (eq .OSProfile.Distro "sles15") (eq .OSProfile.Distro "opensuse") (eq .OSProfile.Distro "leap") (eq .OSProfile.Distro "leap15")}}
+# SUSE/openSUSE Installer
+set kernel-url {{.OSProfile.KernelURL}}
+set initrd-url {{.OSProfile.InitrdURL}}
+set autoyast-url ${server-url}/boot/autoyast/{{.MachineID}}
+set kernel-params ip=dhcp autoyast=${autoyast-url} install={{.OSProfile.RepoURL}} console=tty0 console=ttyS0,115200n8
+
+{{else}}
+echo [ERROR] Unsupported OS distribution: {{.OSProfile.Distro}}
+goto failed
+{{end}}
+
+kernel ${kernel-url} ${kernel-params} || goto failed
+initrd ${initrd-url} || goto failed
+boot || goto failed
+
+{{else if eq .BootMode "localboot"}}
+###############################################################################
+# Local Boot - Boot from local disk (installation completed)
+###############################################################################
+echo [INFO] Booting from local disk...
+echo [INFO] Installation completed successfully!
+echo
+
+# Try to boot from local disk
+sanboot --no-describe --drive 0x80 || goto failed
+
+{{else}}
+###############################################################################
+# Unknown Boot Mode
+###############################################################################
+echo [ERROR] Unknown boot mode: {{.BootMode}}
+goto failed
+{{end}}
+
+:failed
+echo
+echo ========================================================================
+echo [ERROR] Boot failed!
+echo ========================================================================
+echo
+echo Machine ID: {{.MachineID}}
+echo MAC Address: {{.MacAddress}}
+echo Boot Mode: {{.BootMode}}
+echo
+echo Please contact your system administrator.
+echo
+echo Press any key to retry...
+prompt
+goto retry
+
+:retry
+echo Retrying boot...
+chain ${server-url}/boot/ipxe/{{.MacAddress}}

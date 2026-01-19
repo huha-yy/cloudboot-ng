@@ -1,0 +1,289 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<!--
+  CloudBoot NG - AutoYaST Configuration
+  Generated for: {{.Machine.Hostname}} ({{.Machine.MacAddress}})
+  OS: {{.Profile.Distro}} {{.Profile.Version}}
+  Profile ID: {{.Profile.ID}}
+-->
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+
+  <!-- General Settings -->
+  <general>
+    <mode>
+      <confirm config:type="boolean">false</confirm>
+      <final_reboot config:type="boolean">true</final_reboot>
+    </mode>
+  </general>
+
+  <!-- Networking -->
+  <networking>
+    <keep_install_network config:type="boolean">true</keep_install_network>
+    <interfaces config:type="list">
+      <interface>
+        {{if .Profile.Config.NetworkConfig}}
+        {{with .Profile.Config.NetworkConfig}}
+        <device>{{.Device}}</device>
+        <bootproto>{{.BootProto}}</bootproto>
+        {{if eq .BootProto "static"}}
+        <ipaddr>{{.IPAddress}}</ipaddr>
+        <netmask>{{.Netmask}}</netmask>
+        {{end}}
+        {{end}}
+        {{else}}
+        <device>eth0</device>
+        <bootproto>dhcp</bootproto>
+        {{end}}
+        <startmode>auto</startmode>
+      </interface>
+    </interfaces>
+    {{if .Profile.Config.NetworkConfig}}
+    {{with .Profile.Config.NetworkConfig}}
+    {{if eq .BootProto "static"}}
+    <routing>
+      <ipv4_forward config:type="boolean">false</ipv4_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <gateway>{{.Gateway}}</gateway>
+          <netmask>-</netmask>
+          <device>{{.Device}}</device>
+        </route>
+      </routes>
+    </routing>
+    <dns>
+      <hostname>{{$.Machine.Hostname}}</hostname>
+      <nameservers config:type="list">
+        <nameserver>{{.DNS}}</nameserver>
+      </nameservers>
+      <searchlist config:type="list">
+        <search>localdomain</search>
+      </searchlist>
+    </dns>
+    {{end}}
+    {{end}}
+    {{else}}
+    <dns>
+      <hostname>{{.Machine.Hostname}}</hostname>
+    </dns>
+    {{end}}
+  </networking>
+
+  <!-- Partitioning -->
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sda</device>
+      <initialize config:type="boolean">true</initialize>
+      <use>all</use>
+      <partitions config:type="list">
+        {{if .Profile.Config.Partitions}}
+        {{range .Profile.Config.Partitions}}
+        <partition>
+          {{if eq .MountPoint "/boot/efi"}}
+          <filesystem config:type="symbol">vfat</filesystem>
+          <mount>/boot/efi</mount>
+          <size>{{.SizeMB}}M</size>
+          <partition_id config:type="integer">259</partition_id>
+          {{else if eq .MountPoint "swap"}}
+          <filesystem config:type="symbol">swap</filesystem>
+          <mount>swap</mount>
+          <size>{{.SizeMB}}M</size>
+          <partition_id config:type="integer">130</partition_id>
+          {{else if eq .MountPoint "/"}}
+          <filesystem config:type="symbol">{{.FileSystem}}</filesystem>
+          <mount>/</mount>
+          <size>max</size>
+          <partition_id config:type="integer">131</partition_id>
+          {{else}}
+          <filesystem config:type="symbol">{{.FileSystem}}</filesystem>
+          <mount>{{.MountPoint}}</mount>
+          <size>{{.SizeMB}}M</size>
+          <partition_id config:type="integer">131</partition_id>
+          {{end}}
+        </partition>
+        {{end}}
+        {{else}}
+        <!-- Default partitioning -->
+        <partition>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <mount>/boot</mount>
+          <size>1024M</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">swap</filesystem>
+          <mount>swap</mount>
+          <size>8192M</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <mount>/</mount>
+          <size>max</size>
+        </partition>
+        {{end}}
+      </partitions>
+    </drive>
+  </partitioning>
+
+  <!-- Software Selection -->
+  <software>
+    <products config:type="list">
+      <product>SLES</product>
+    </products>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+      <pattern>minimal_base</pattern>
+    </patterns>
+    <packages config:type="list">
+      <package>wget</package>
+      <package>curl</package>
+      <package>vim</package>
+      <package>net-tools</package>
+      <package>bind-utils</package>
+      <package>chrony</package>
+      <package>python3</package>
+      {{if .Profile.Config.Packages}}
+      {{range .Profile.Config.Packages}}
+      <package>{{.}}</package>
+      {{end}}
+      {{end}}
+    </packages>
+  </software>
+
+  <!-- Users -->
+  <users config:type="list">
+    <user>
+      <username>root</username>
+      <user_password>{{if .Profile.Config.RootPasswordHash}}{{.Profile.Config.RootPasswordHash}}{{else}}$6$rounds=656000$YQKJWPTd7USGake4$CmMFQe/ppJPPGYnRsVAlyuPmcxgRfWWNJ5S0AXBX5HcOPY/Y2DZVFB6OwDKk0Fmb2a/C.T77i2VZCpNzqwCB.{{end}}</user_password>
+      <encrypted config:type="boolean">true</encrypted>
+    </user>
+  </users>
+
+  <!-- Bootloader -->
+  <bootloader>
+    <global>
+      <activate>true</activate>
+      <timeout config:type="integer">5</timeout>
+      <append>console=tty0 console=ttyS0,115200n8</append>
+    </global>
+  </bootloader>
+
+  <!-- Timezone -->
+  <timezone>
+    <hwclock>UTC</hwclock>
+    <timezone>{{if .Profile.Config.Timezone}}{{.Profile.Config.Timezone}}{{else}}America/New_York{{end}}</timezone>
+  </timezone>
+
+  <!-- Firewall -->
+  <firewall>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+    <start_firewall config:type="boolean">false</start_firewall>
+  </firewall>
+
+  <!-- Services -->
+  <services-manager>
+    <default_target>multi-user</default_target>
+    <services>
+      <enable config:type="list">
+        <service>sshd</service>
+        <service>chronyd</service>
+      </enable>
+    </services>
+  </services-manager>
+
+  <!-- Scripts -->
+  <scripts>
+    <!-- Pre-installation script -->
+    <pre-scripts config:type="list">
+      <script>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#!/bin/bash
+echo "=========================================="
+echo "CloudBoot NG - Pre-Installation Script"
+echo "=========================================="
+echo "Machine ID: {{.Machine.ID}}"
+echo "MAC Address: {{.Machine.MacAddress}}"
+echo "Hostname: {{.Machine.Hostname}}"
+echo "=========================================="
+
+# Report installation start
+curl -X POST {{.ServerURL}}/api/boot/v1/status \
+  -H "Content-Type: application/json" \
+  -d '{
+    "machine_id": "{{.Machine.ID}}",
+    "status": "installing",
+    "step": "pre_install"
+  }' || true
+        ]]></source>
+      </script>
+    </pre-scripts>
+
+    <!-- Post-installation script -->
+    <post-scripts config:type="list">
+      <script>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#!/bin/bash
+echo "=========================================="
+echo "CloudBoot NG - Post-Installation Script"
+echo "=========================================="
+
+# Configure SSH
+sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config
+systemctl enable sshd
+systemctl start sshd
+
+# Configure NTP
+systemctl enable chronyd
+systemctl start chronyd
+
+{{if .Profile.Config.InstallAgent}}
+# Install CloudBoot Agent
+echo "Installing CloudBoot Agent..."
+curl -o /tmp/cloudboot-agent {{.ServerURL}}/static/bin/cloudboot-agent
+chmod +x /tmp/cloudboot-agent
+mv /tmp/cloudboot-agent /usr/local/bin/cloudboot-agent
+
+# Create systemd service
+cat > /etc/systemd/system/cloudboot-agent.service <<'AGENT_SERVICE'
+[Unit]
+Description=CloudBoot Agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cloudboot-agent --server={{.ServerURL}} --mac={{.Machine.MacAddress}}
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+AGENT_SERVICE
+
+systemctl enable cloudboot-agent
+systemctl start cloudboot-agent
+{{end}}
+
+# Custom post-install scripts
+{{if .Profile.Config.PostScript}}
+{{.Profile.Config.PostScript}}
+{{end}}
+
+# Report installation completion
+curl -X POST {{.ServerURL}}/api/boot/v1/status \
+  -H "Content-Type: application/json" \
+  -d '{
+    "machine_id": "{{.Machine.ID}}",
+    "status": "success",
+    "step": "post_install"
+  }' || true
+
+echo "=========================================="
+echo "Installation completed successfully!"
+echo "=========================================="
+        ]]></source>
+      </script>
+    </post-scripts>
+  </scripts>
+
+</profile>

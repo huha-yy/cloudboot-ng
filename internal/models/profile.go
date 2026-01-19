@@ -8,7 +8,8 @@ import (
 type OSProfile struct {
 	ID        string        `gorm:"primaryKey" json:"id"`
 	Name      string        `gorm:"uniqueIndex;type:varchar(100)" json:"name"`
-	Distro    string        `gorm:"type:varchar(50)" json:"distro"`
+	Distro    string        `gorm:"type:varchar(50)" json:"distro"`    // centos7, ubuntu22, rocky8, suse15
+	Version   string        `gorm:"type:varchar(20)" json:"version"`   // 7.9, 22.04, 8.8, 15.5
 	Config    ProfileConfig `gorm:"serializer:json;type:text" json:"config"`
 	CreatedAt time.Time     `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
@@ -16,30 +17,34 @@ type OSProfile struct {
 
 // ProfileConfig 安装配置详情
 type ProfileConfig struct {
-	RootPasswordHash string          `json:"root_password_hash"`
-	Timezone         string          `json:"timezone"`
-	RepoURL          string          `json:"repo_url"`      // Mirror URL for package installation
-	Partitions       []Partition     `json:"partitions"`
-	Network          NetworkConfig   `json:"network"`
-	Packages         []string        `json:"packages"`
-	PostScript       string          `json:"post_script,omitempty"` // Post-installation script
+	RootPasswordHash string               `json:"root_password_hash"`
+	Timezone         string               `json:"timezone"`             // America/New_York, Asia/Shanghai
+	RepoURL          string               `json:"repo_url"`             // Mirror URL for package installation
+	Partitions       []PartitionConfig    `json:"partitions"`
+	NetworkConfig    *NetworkConfigDetail `json:"network_config"`
+	Packages         []string             `json:"packages"`             // Additional packages to install
+	PostScript       string               `json:"post_script"`          // Post-installation script
+	InstallAgent     bool                 `json:"install_agent"`        // Install CloudBoot Agent
+	KernelURL        string               `json:"kernel_url,omitempty"` // Custom kernel URL
+	InitrdURL        string               `json:"initrd_url,omitempty"` // Custom initrd URL
 }
 
-// Partition 分区配置
-type Partition struct {
-	MountPoint string `json:"mount_point"` // /, /boot, /home, etc.
-	Size       string `json:"size"`        // 100GB, 20%
-	FSType     string `json:"fstype"`      // ext4, xfs, swap
+// PartitionConfig 分区配置
+type PartitionConfig struct {
+	MountPoint string `json:"mount_point"` // /, /boot, /boot/efi, /home, swap
+	SizeMB     int    `json:"size_mb"`     // Size in MB (0 = use remaining)
+	FileSystem string `json:"file_system"` // ext4, xfs, swap, vfat
+	Grow       bool   `json:"grow"`        // Grow to fill available space
 }
 
-// NetworkConfig 网络配置
-type NetworkConfig struct {
-	DHCP     bool     `json:"dhcp"`
-	Hostname string   `json:"hostname"`
-	IP       string   `json:"ip,omitempty"`
-	Netmask  string   `json:"netmask,omitempty"`
-	Gateway  string   `json:"gateway,omitempty"`
-	DNS      []string `json:"dns,omitempty"`
+// NetworkConfigDetail 网络配置详情
+type NetworkConfigDetail struct {
+	BootProto string `json:"boot_proto"` // dhcp, static
+	Device    string `json:"device"`     // eth0, ens192
+	IPAddress string `json:"ip_address,omitempty"`
+	Netmask   string `json:"netmask,omitempty"`
+	Gateway   string `json:"gateway,omitempty"`
+	DNS       string `json:"dns,omitempty"` // Single DNS server
 }
 
 // TableName 指定表名

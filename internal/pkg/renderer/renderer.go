@@ -50,6 +50,14 @@ func NewTemplateRenderer(templatesPath string) (*TemplateRenderer, error) {
 		return nil, err
 	}
 
+	// Also load boot templates (Kickstart, iPXE, AutoYaST)
+	bootPath := filepath.Join(templatesPath, "boot", "*.tmpl")
+	bootFiles, err := filepath.Glob(bootPath)
+	if err == nil {
+		// Append boot templates to pages
+		pageFiles = append(pageFiles, bootFiles...)
+	}
+
 	baseLayout := filepath.Join(templatesPath, "layouts", "base.html")
 	componentsPattern := filepath.Join(templatesPath, "components", "*.html")
 
@@ -59,13 +67,23 @@ func NewTemplateRenderer(templatesPath string) (*TemplateRenderer, error) {
 		// Create a new template set for this page
 		tmpl := template.New(pageName).Funcs(funcMap)
 
-		// Parse components
+		// Boot templates (.tmpl) are standalone, don't need layout/components
+		if filepath.Ext(pageFile) == ".tmpl" {
+			tmpl, err = tmpl.ParseFiles(pageFile)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse boot template %s: %w", pageName, err)
+			}
+			renderer.pages[pageName] = tmpl
+			continue
+		}
+
+		// Parse components (only for HTML pages)
 		tmpl, err = tmpl.ParseGlob(componentsPattern)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse components for %s: %w", pageName, err)
 		}
 
-		// Parse base layout
+		// Parse base layout (only for HTML pages)
 		tmpl, err = tmpl.ParseFiles(baseLayout)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse base layout for %s: %w", pageName, err)
@@ -177,7 +195,12 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 		return fmt.Errorf("template %s not found", name)
 	}
 
-	// Always execute base.html which will call the content block
+	// Boot templates (.tmpl) are standalone - execute directly
+	if filepath.Ext(name) == ".tmpl" {
+		return tmpl.Execute(w, data)
+	}
+
+	// HTML pages execute base.html which will call the content block
 	// The content block is defined in each page template as {{define "content"}}
 	return tmpl.ExecuteTemplate(w, "base.html", data)
 }
