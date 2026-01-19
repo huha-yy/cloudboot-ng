@@ -167,6 +167,7 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 	machineHandler := api.NewMachineHandler()
 	jobHandler := api.NewJobHandler()
 	bootHandler := api.NewBootHandler(broker)
+	agentHandler := api.NewAgentHandler() // 新增：标准Agent硬件上报协议
 	streamHandler := api.NewStreamHandler(broker)
 	demoHandler := api.NewDemoHandler(broker)
 	profileHandler := api.NewProfileHandler()
@@ -206,7 +207,14 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 	// Boot API (Agent ↔ Core)
 	bootAPI := e.Group("/api/boot/v1")
 	{
-		bootAPI.POST("/register", bootHandler.RegisterAgent)
+		// 标准硬件上报协议 (agent_handler.go)
+		bootAPI.POST("/register", agentHandler.Register)   // Agent首次注册
+		bootAPI.POST("/heartbeat", agentHandler.Heartbeat) // Agent心跳（定期上报）
+
+		// 兼容老协议 (boot_handler.go)
+		bootAPI.POST("/register-legacy", bootHandler.RegisterAgent)
+
+		// 任务管理
 		bootAPI.GET("/task", bootHandler.GetTask)
 		bootAPI.POST("/logs", bootHandler.UploadLogs)
 		bootAPI.POST("/status", bootHandler.ReportStatus)
