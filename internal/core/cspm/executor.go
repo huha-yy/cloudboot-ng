@@ -11,21 +11,37 @@ import (
 
 // Executor CSPM Provider执行器
 type Executor struct {
-	providerPath string
-	timeout      time.Duration
+	providerPath  string
+	timeout       time.Duration
+	sandbox       Sandbox
+	sandboxConfig *SandboxConfig
+	sandboxEnabled bool
 }
 
 // NewExecutor 创建新的Executor
 func NewExecutor(providerPath string) *Executor {
 	return &Executor{
-		providerPath: providerPath,
-		timeout:      5 * time.Minute, // 默认超时5分钟
+		providerPath:   providerPath,
+		timeout:        5 * time.Minute, // 默认超时5分钟
+		sandbox:        NewSandbox(),    // 创建平台特定的沙箱
+		sandboxConfig:  DefaultSandboxConfig(), // 使用默认沙箱配置
+		sandboxEnabled: true,            // 默认启用沙箱
 	}
 }
 
 // SetTimeout 设置执行超时
 func (e *Executor) SetTimeout(timeout time.Duration) {
 	e.timeout = timeout
+}
+
+// EnableSandbox 启用/禁用沙箱
+func (e *Executor) EnableSandbox(enabled bool) {
+	e.sandboxEnabled = enabled
+}
+
+// SetSandboxConfig 设置沙箱配置
+func (e *Executor) SetSandboxConfig(config *SandboxConfig) {
+	e.sandboxConfig = config
 }
 
 // Execute 执行Provider命令
@@ -39,6 +55,15 @@ func (e *Executor) Execute(ctx context.Context, cmd string, config map[string]in
 	// 构建命令
 	cmdArgs := []string{cmd}
 	command := exec.CommandContext(execCtx, e.providerPath, cmdArgs...)
+
+	// 应用沙箱隔离
+	if e.sandboxEnabled && e.sandbox != nil && e.sandboxConfig != nil {
+		if err := e.sandbox.Apply(execCtx, command, e.sandboxConfig); err != nil {
+			return nil, fmt.Errorf("failed to apply sandbox: %w", err)
+		}
+		// 注册清理函数
+		defer e.sandbox.Cleanup()
+	}
 
 	// 准备Stdin（JSON config）
 	if config != nil {
