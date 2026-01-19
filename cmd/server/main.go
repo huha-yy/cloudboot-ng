@@ -9,6 +9,7 @@ import (
 	"github.com/cloudboot/cloudboot-ng/internal/api"
 	"github.com/cloudboot/cloudboot-ng/internal/core/cspm"
 	"github.com/cloudboot/cloudboot-ng/internal/core/logbroker"
+	"github.com/cloudboot/cloudboot-ng/internal/pkg/crypto"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/database"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/monitor"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/renderer"
@@ -131,13 +132,35 @@ func main() {
 }
 
 func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
-	// 初始化PluginManager
+	// ========== DRM/安全初始化 ==========
+	// TODO(生产环境): 从安全存储(HSM/Vault)加载Master Key和License
+	// 当前为开发环境临时方案
+
+	masterKey, err := crypto.GenerateAES256Key()
+	if err != nil {
+		log.Fatalf("❌ Master Key生成失败: %v", err)
+	}
+	log.Println("⚠️  开发模式: 使用临时生成的Master Key (生产环境需从HSM加载)")
+
+	// 生成临时ECDSA密钥对 (开发环境)
+	privateKey, err := crypto.GenerateECDSAKeyPair()
+	if err != nil {
+		log.Fatalf("❌ ECDSA密钥对生成失败: %v", err)
+	}
+	officialPubKey := &privateKey.PublicKey
+	log.Println("⚠️  开发模式: 使用临时生成的ECDSA公钥 (生产环境需使用官方公钥)")
+
+	// 当前License ID (开发环境使用默认值)
+	currentLicenseID := getEnv("LICENSE_ID", "dev-license-00000000")
+	log.Printf("📋 当前License ID: %s", currentLicenseID)
+
+	// 初始化PluginManager (带DRM支持)
 	storeDir := getEnv("STORE_DIR", "./data/store")
-	pluginManager, err := cspm.NewPluginManager(storeDir)
+	pluginManager, err := cspm.NewPluginManager(storeDir, masterKey, officialPubKey, currentLicenseID)
 	if err != nil {
 		log.Fatalf("❌ PluginManager初始化失败: %v", err)
 	}
-	log.Println("✅ PluginManager初始化完成")
+	log.Println("✅ PluginManager初始化完成 (含DRM安全机制)")
 
 	// 初始化Handler
 	machineHandler := api.NewMachineHandler()
