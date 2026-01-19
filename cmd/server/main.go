@@ -9,6 +9,7 @@ import (
 	"github.com/cloudboot/cloudboot-ng/internal/api"
 	"github.com/cloudboot/cloudboot-ng/internal/core/cspm"
 	"github.com/cloudboot/cloudboot-ng/internal/core/logbroker"
+	"github.com/cloudboot/cloudboot-ng/internal/models"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/crypto"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/database"
 	"github.com/cloudboot/cloudboot-ng/internal/pkg/monitor"
@@ -167,6 +168,7 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 	jobHandler := api.NewJobHandler()
 	bootHandler := api.NewBootHandler(broker)
 	streamHandler := api.NewStreamHandler(broker)
+	demoHandler := api.NewDemoHandler(broker)
 	profileHandler := api.NewProfileHandler()
 	storeHandler := api.NewStoreHandler(pluginManager)
 	webHandler := api.NewWebHandler(pluginManager)
@@ -244,6 +246,9 @@ func setupRoutes(e *echo.Echo, broker *logbroker.Broker) {
 
 	// Stream API (SSE)
 	e.GET("/api/stream/logs/:job_id", streamHandler.StreamLogs)
+
+	// Demo API (演示Orchestrator执行)
+	e.POST("/api/demo/orchestrator", demoHandler.TriggerOrchestratorDemo)
 }
 
 func designSystemHandler(c echo.Context) error {
@@ -384,7 +389,18 @@ func designSystemHandler(c echo.Context) error {
 }
 
 func jobLogsPageHandler(c echo.Context) error {
-	return c.File("web/templates/job_logs.html")
+	jobID := c.Param("job_id")
+
+	// 获取Job信息
+	var job models.Job
+	if err := database.DB.Preload("Machine").First(&job, "id = ?", jobID).Error; err != nil {
+		return c.String(404, "Job not found")
+	}
+
+	// 渲染job-logs页面
+	return c.Render(200, "job-logs.html", map[string]interface{}{
+		"job": job,
+	})
 }
 
 func getEnv(key, defaultValue string) string {
