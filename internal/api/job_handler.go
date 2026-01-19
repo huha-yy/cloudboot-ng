@@ -26,7 +26,7 @@ func (h *JobHandler) ListJobs(c echo.Context) error {
 	machineID := c.QueryParam("machine_id")
 
 	// 构建查询
-	query := db.Model(&models.Job{}).Preload("Machine")
+	query := db.Model(&models.Job{}).Preload("Machine").Preload("Profile")
 
 	// 按状态过滤
 	if status != "" {
@@ -58,7 +58,7 @@ func (h *JobHandler) GetJob(c echo.Context) error {
 	id := c.Param("id")
 
 	var job models.Job
-	if err := db.Preload("Machine").Where("id = ?", id).First(&job).Error; err != nil {
+	if err := db.Preload("Machine").Preload("Profile").Where("id = ?", id).First(&job).Error; err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"error": "Job not found",
 		})

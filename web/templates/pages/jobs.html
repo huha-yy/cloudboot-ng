@@ -108,13 +108,24 @@
                             {{else}}{{.Type}}
                             {{end}}
                         </h3>
-                        <p class="text-sm text-slate-400">机器: 
+                        <p class="text-sm text-slate-400">机器:
                             {{if .Machine}}
                             <span class="font-mono">{{.Machine.Hostname}}</span>
                             {{else}}
                             <span class="font-mono">{{printf "%.8s" .MachineID}}</span>
                             {{end}}
                         </p>
+                        {{if and (eq .Type "install_os") .ProfileID}}
+                        <p class="text-sm text-slate-400 mt-1">配置:
+                            {{if .Profile}}
+                            <span class="font-mono text-emerald-500">{{.Profile.Distro}}{{if .Profile.Version}} {{.Profile.Version}}{{end}}</span>
+                            <span class="text-slate-500 mx-1">|</span>
+                            <span class="text-slate-300">{{.Profile.Name}}</span>
+                            {{else}}
+                            <span class="font-mono text-slate-500">{{printf "%.8s" .ProfileID}}</span>
+                            {{end}}
+                        </p>
+                        {{end}}
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -237,7 +248,8 @@
 <div id="new-job-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="document.getElementById('new-job-modal').classList.add('hidden')"></div>
-        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg">
+        <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg"
+             x-data="{ taskType: 'audit' }">
             <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-white">新建任务</h3>
                 <button onclick="document.getElementById('new-job-modal').classList.add('hidden')" class="p-1 hover:bg-slate-800 rounded transition-colors">
@@ -249,7 +261,9 @@
             <form hx-post="/api/v1/jobs" class="p-6 space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">任务类型</label>
-                    <select name="type" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                    <select name="type"
+                            x-model="taskType"
+                            class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
                         <option value="audit">硬件审计</option>
                         <option value="config_raid">RAID 配置</option>
                         <option value="install_os">操作系统安装</option>
@@ -257,21 +271,29 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">目标机器</label>
-                    <select name="machine_id" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                    <select name="machine_id" required class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
                         <option value="">-- 选择机器 --</option>
                         {{range .availableMachines}}
                         <option value="{{.ID}}">{{.Hostname}} ({{.IPAddress}})</option>
                         {{end}}
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">OS 配置文件</label>
-                    <select name="profile_id" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                <div x-show="taskType === 'install_os'" x-transition>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                        OS 配置文件
+                        <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="profile_id"
+                            :required="taskType === 'install_os'"
+                            class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
                         <option value="">-- 选择配置文件 --</option>
                         {{range .profiles}}
                         <option value="{{.ID}}">{{.Name}} ({{.Distro}})</option>
                         {{end}}
                     </select>
+                    <p class="mt-1 text-xs text-slate-500">
+                        操作系统安装任务必须选择配置文件
+                    </p>
                 </div>
                 <div class="flex justify-end space-x-3 pt-4">
                     <button type="button" onclick="document.getElementById('new-job-modal').classList.add('hidden')"

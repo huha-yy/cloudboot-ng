@@ -71,6 +71,10 @@ func (h *WebHandler) MachinesPage(c echo.Context) error {
 	var machines []models.Machine
 	database.DB.Find(&machines)
 
+	// Fetch all profiles for task creation form
+	var profiles []models.OSProfile
+	database.DB.Find(&profiles)
+
 	// Calculate stats
 	stats := struct {
 		TotalMachines   int
@@ -94,6 +98,7 @@ func (h *WebHandler) MachinesPage(c echo.Context) error {
 		"pageHeader":      "Physical Machines",
 		"pageDescription": "Manage and monitor your bare-metal servers",
 		"machines":        machines,
+		"profiles":        profiles,
 		"stats":           stats,
 	}
 
@@ -103,7 +108,7 @@ func (h *WebHandler) MachinesPage(c echo.Context) error {
 // JobsPage renders the Jobs page
 func (h *WebHandler) JobsPage(c echo.Context) error {
 	var jobs []models.Job
-	database.DB.Preload("Machine").Order("created_at DESC").Find(&jobs)
+	database.DB.Preload("Machine").Preload("Profile").Order("created_at DESC").Find(&jobs)
 
 	// Calculate stats
 	stats := struct {

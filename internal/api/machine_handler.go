@@ -234,6 +234,7 @@ func (h *MachineHandler) ProvisionMachine(c echo.Context) error {
 		MachineID:   machineID,
 		Type:        models.JobTypeInstallOS,
 		Status:      models.JobStatusPending,
+		ProfileID:   req.ProfileID,
 		StepCurrent: "pending",
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
