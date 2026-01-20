@@ -7,12 +7,12 @@ tmp_dir = "tmp"
   bin = "./tmp/main"
   cmd = "go build -o ./tmp/main cmd/server/main.go"
   delay = 1000
+  full_bin = "DEV=1 ./tmp/main"
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "build", "docs", "scripts"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
   follow_symlink = false
-  full_bin = ""
   include_dir = []
   include_ext = ["go", "tpl", "tmpl", "html"]
   include_file = []

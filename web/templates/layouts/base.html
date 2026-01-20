@@ -14,6 +14,11 @@
     <!-- Styles -->
     <link href="/static/css/output.css" rel="stylesheet">
 
+    <!-- Alpine.js x-cloak fix -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
     <!-- HTMX -->
     <script src="/static/js/htmx.min.js"></script>
 
@@ -54,6 +59,41 @@
             </div>
         </main>
     </div>
+
+    <!-- Alpine.js Load Detection -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            if (typeof Alpine === 'undefined') {
+                console.error('❌ Alpine.js 加载失败！正在尝试重新加载...');
+
+                // 显示错误提示横幅
+                const banner = document.createElement('div');
+                banner.className = 'fixed top-0 left-0 right-0 bg-rose-500 text-white px-4 py-3 text-center z-50 shadow-lg';
+                banner.innerHTML = '<strong>⚠️ 页面交互组件加载失败</strong> - 正在重试...';
+                document.body.prepend(banner);
+
+                // 尝试重新加载 Alpine.js
+                const script = document.createElement('script');
+                script.src = '/static/js/alpine.min.js';
+                script.onload = () => {
+                    console.log('✅ Alpine.js 重新加载成功');
+                    banner.textContent = '✅ 交互功能已恢复，正在刷新页面...';
+                    banner.className = 'fixed top-0 left-0 right-0 bg-emerald-500 text-white px-4 py-3 text-center z-50 shadow-lg';
+                    setTimeout(() => location.reload(), 1000);
+                };
+                script.onerror = () => {
+                    console.error('❌ Alpine.js 重新加载失败');
+                    banner.innerHTML = '<strong>❌ 交互功能无法使用</strong> - 请刷新页面 (F5) 或联系管理员';
+                    banner.className = 'fixed top-0 left-0 right-0 bg-rose-700 text-white px-4 py-3 text-center z-50 shadow-lg';
+                };
+                document.head.appendChild(script);
+            } else {
+                console.log('✅ Alpine.js 已正确加载 (版本:', Alpine.version || 'unknown', ')');
+            }
+        }, 500); // 等待 500ms 让 defer 脚本执行
+    });
+    </script>
 </body>
 </html>
 {{end}}

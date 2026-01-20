@@ -2,6 +2,9 @@ package api
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"encoding/json"
 	"io"
 	"mime/multipart"
@@ -18,7 +21,17 @@ import (
 func setupStoreTest(t *testing.T) (*cspm.PluginManager, string) {
 	// Create temp store directory
 	tempDir := t.TempDir()
-	pm, err := cspm.NewPluginManager(tempDir)
+	// For testing, use a 32-byte master key
+	masterKey := make([]byte, 32)
+	for i := range masterKey {
+		masterKey[i] = byte(i)
+	}
+	// Generate a test ECDSA key pair
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("Failed to generate ECDSA key: %v", err)
+	}
+	pm, err := cspm.NewPluginManager(tempDir, masterKey, &privateKey.PublicKey, "test-license-id")
 	if err != nil {
 		t.Fatalf("Failed to create plugin manager: %v", err)
 	}

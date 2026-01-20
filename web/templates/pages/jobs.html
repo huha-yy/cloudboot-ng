@@ -1,5 +1,5 @@
 {{define "content"}}
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto" x-data="{ newJobModalOpen: false }">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
         <div>
@@ -7,8 +7,7 @@
             <p class="text-slate-400 mt-1">监控和管理服务器配置任务</p>
         </div>
         <div class="flex items-center space-x-3">
-            <button onclick="document.getElementById('new-job-modal').classList.remove('hidden')"
-                class="btn-primary">
+            <button @click="newJobModalOpen = true" class="btn-primary">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -236,8 +235,7 @@
         </svg>
         <h3 class="text-lg font-medium text-slate-400 mb-2">暂无任务</h3>
         <p class="text-slate-500 mb-4">选择一台机器并运行配置任务</p>
-        <button onclick="document.getElementById('new-job-modal').classList.remove('hidden')"
-            class="btn-primary">
+        <button @click="newJobModalOpen = true" class="btn-primary">
             新建任务
         </button>
     </div>
@@ -245,14 +243,14 @@
 </div>
 
 <!-- New Job Modal -->
-<div id="new-job-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+<div x-show="newJobModalOpen" @keydown.escape.window="newJobModalOpen = false" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="document.getElementById('new-job-modal').classList.add('hidden')"></div>
+        <div @click="newJobModalOpen = false" class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
         <div class="relative bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg"
              x-data="{ taskType: 'audit' }">
             <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-white">新建任务</h3>
-                <button onclick="document.getElementById('new-job-modal').classList.add('hidden')" class="p-1 hover:bg-slate-800 rounded transition-colors">
+                <button @click="newJobModalOpen = false" class="p-1 hover:bg-slate-800 rounded transition-colors">
                     <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -296,8 +294,7 @@
                     </p>
                 </div>
                 <div class="flex justify-end space-x-3 pt-4">
-                    <button type="button" onclick="document.getElementById('new-job-modal').classList.add('hidden')"
-                        class="btn-secondary">
+                    <button type="button" @click="newJobModalOpen = false" class="btn-secondary">
                         取消
                     </button>
                     <button type="submit" class="btn-primary">

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- fix(frontend): 统一所有模态框为Alpine.js交互模式 - 解决前端交互问题 (2026-01-20 10:42)
+
+
 ### Added
 - 实现Provider原子序列编排器(Orchestrator) - Plan→Probe→Apply闭环 (2026-01-19 00:30)
   - 强制Plan步骤预演变更，确保配置合法性
