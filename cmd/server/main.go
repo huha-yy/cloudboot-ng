@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/cloudboot/cloudboot-ng/internal/api"
 	"github.com/cloudboot/cloudboot-ng/internal/core/cspm"
@@ -62,12 +63,24 @@ func main() {
 	broker := logbroker.NewBroker()
 	log.Println("✅ LogBroker初始化完成")
 
+	// 初始化数据库备份调度器
+	backupDir := getEnv("BACKUP_DIR", "./backups")
+	backupInterval := getEnv("BACKUP_INTERVAL", "24h")
+	interval, err := time.ParseDuration(backupInterval)
+	if err != nil {
+		log.Printf("⚠️  备份间隔配置无效，使用默认值24h: %v", err)
+		interval = 24 * time.Hour
+	}
+	backupManager := database.NewBackupManager(dbConfig.DSN, backupDir)
+	backupScheduler := database.NewBackupScheduler(backupManager, interval)
+	backupScheduler.Start()
+	log.Println("✅ 数据库备份调度器已启动")
+
 	// 检测运行模式 (DEV=1 开发模式, 默认生产模式)
 	isDev := getEnv("DEV", "") != ""
 
 	// 初始化模板渲染器
 	var templateRenderer *renderer.TemplateRenderer
-	var err error
 	if isDev {
 		// 开发模式：从文件系统加载
 		log.Println("🔧 开发模式：从文件系统加载模板")

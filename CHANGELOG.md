@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- feat(database): 实现数据库自动备份与恢复机制 (2026-01-23 16:50)
+
+
+### Changed
 - docs(bootos): 添加BootOS ISO构建与验证完整指南 - P1-6任务完成 (2026-01-23 15:04)
 
 
