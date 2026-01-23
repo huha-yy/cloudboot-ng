@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- docs(bootos): 添加BootOS ISO构建与验证完整指南 - P1-6任务完成 (2026-01-23 15:04)
+
+
+### Changed
 - fix(frontend): 统一所有模态框为Alpine.js交互模式 - 解决前端交互问题 (2026-01-20 10:42)
 
 
